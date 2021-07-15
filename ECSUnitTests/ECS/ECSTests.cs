@@ -1,6 +1,5 @@
-﻿using ECS.ECS;
+﻿using ECS;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SimplestECS.ECS;
 using System;
 using System.Collections.Generic;
 using System.Text;

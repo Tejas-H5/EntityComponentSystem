@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SceneGraph.SceneGraphCore
+namespace ECSBenchmarking.SceneGraph
 {
     //Highly simplified
     public abstract class SGComponent
@@ -18,9 +18,9 @@ namespace SceneGraph.SceneGraphCore
         public virtual void Init() { }
         public virtual void Update(float deltaTime) { }
 
-        public abstract Type GetActualType();
         /*
         //Such functions are not needed in an ECS paradigm but may needed here if required by any of the components
+        //This may be balanced by the fact that components have inheritance, which might make them easier to program
 
         //public virtual void PreRender() { }
         //public virtual void Render() { }

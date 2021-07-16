@@ -15,7 +15,7 @@ namespace ECSBenchmarking
     }
 
     [ECSComponent((int)Components.Velocity)]
-    struct Velocity
+    public struct Velocity
     {
         public float X, Y;
 
@@ -26,8 +26,10 @@ namespace ECSBenchmarking
         }
     }
 
+
+
     [ECSComponent((int)Components.Position)]
-    struct Position
+    public struct Position
     {
         public float X, Y;
 
@@ -38,8 +40,11 @@ namespace ECSBenchmarking
         }
     }
 
+
+
+
     [ECSComponent((int)Components.Acceleration)]
-    struct Acceleration
+    public struct Acceleration
     {
         public float X, Y;
 
@@ -50,8 +55,10 @@ namespace ECSBenchmarking
         }
     }
 
+
+
     [ECSComponent((int)Components.Name)]
-    struct Name
+    public struct Name
     {
         public string NameString;
 
@@ -60,7 +67,6 @@ namespace ECSBenchmarking
             NameString = name;
         }
     }
-
 
     class MotionIntergratorSystem2D : ECSSystem
     {

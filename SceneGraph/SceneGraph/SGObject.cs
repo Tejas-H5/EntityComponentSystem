@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SceneGraph.SceneGraphCore
+namespace SceneGraph
 {
     public static class ListExtensions
     {
@@ -50,7 +50,8 @@ namespace SceneGraph.SceneGraphCore
         {
             for (int i = 0; i < components.Count; i++)
             {
-                if (components[i].GetActualType() == t)
+                Type ti = components[i].GetType();
+                if (ti.IsSubclassOf(t) || ti == t)
                 {
                     return i;
                 }

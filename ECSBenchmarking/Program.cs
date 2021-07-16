@@ -7,7 +7,7 @@ namespace ECSBenchmarking
     {
         static void Main(string[] args)
         {
-            BenchmarkRunner.Run<ECSvsHardcodedBenchmarks>();
+            BenchmarkRunner.Run<ECSvsSceneGraph>();
 
             while (true)
             {

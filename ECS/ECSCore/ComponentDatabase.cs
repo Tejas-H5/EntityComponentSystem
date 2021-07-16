@@ -15,7 +15,8 @@ namespace ECS
 
         public ComponentDatabase()
         {
-            foreach (KeyValuePair<Type, int> tIdPair in RegisteredComponents.OrderedTypes)
+            var enumerable = RegisteredComponents.OrderedTypes;
+            foreach (KeyValuePair<Type, int> tIdPair in enumerable)
             {
                 IComponentList list = createComponentListInstanceWithReflection(tIdPair.Key, tIdPair.Value);
                 componentDatabase.Add(list);

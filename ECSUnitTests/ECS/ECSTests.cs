@@ -22,12 +22,21 @@ namespace SimplestECSUnitTests.ECS
         {
             ECSWorld world = new ECSWorld();
 
-            uint entity = world.CreateEntity();
-            uint entity2 = world.CreateEntity();
-            uint entity3 = world.CreateEntity();
-            uint entity4 = world.CreateEntity();
+            createSeveralEntities(world, 4);
 
             Assert.IsTrue(world.EntityCount == 4);
+        }
+
+        private static List<uint> createSeveralEntities(ECSWorld world, int number)
+        {
+            List<uint> entities = new List<uint>();
+            for (int i = 0; i < number; i++)
+            {
+                uint entity = world.CreateEntity();
+                entities.Add(entity);
+            }
+
+            return entities;
         }
 
         [TestMethod]
@@ -35,15 +44,12 @@ namespace SimplestECSUnitTests.ECS
         {
             ECSWorld world = new ECSWorld();
 
-            uint entity = world.CreateEntity();
-            uint entity2 = world.CreateEntity();
-            uint entity3 = world.CreateEntity();
-            uint entity4 = world.CreateEntity();
+            List<uint> entities = createSeveralEntities(world, 4);
 
-            world.DestroyEntity(entity);
-            world.DestroyEntity(entity4);
-            world.DestroyEntity(entity2);
-            world.DestroyEntity(entity3);
+            world.DestroyEntity(entities[0]);
+            world.DestroyEntity(entities[3]);
+            world.DestroyEntity(entities[1]);
+            world.DestroyEntity(entities[2]);
 
             Assert.IsTrue(world.EntityCount == 0);
         }
@@ -79,29 +85,13 @@ namespace SimplestECSUnitTests.ECS
 
             MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
 
-            List<uint> entities = new List<uint>();
-            for(int i = 0; i < 4; i++)
-            {
-                uint entity = world.CreateEntity();
-                world.AddComponent(entity, new Position(0, 0));
-                world.AddComponent(entity, new Velocity(1, 0));
-                world.AddComponent(entity, new Acceleration(0, 0));
-                entities.Add(entity);
-            }
-            
+            List<uint> entities = createSeveralEntities(world, 4);
+            addPositionAccelerationVelocityComponents(world, entities);
 
             float framerate = 1f / 60f;
             for (float t = 0; t < 10f; t += framerate)
             {
                 motionIntegrator.Update(framerate);
-            }
-
-            List<Position> positions = new List<Position>();
-
-            for (int i = 0; i < entities.Count; i++)
-            {
-                Position pos = world.GetComponentFromEntity<Position>(entities[i]);
-                positions.Add(pos);
             }
 
             for (int i = 0; i < entities.Count; i++)
@@ -112,41 +102,43 @@ namespace SimplestECSUnitTests.ECS
             }
         }
 
+        private static void addPositionAccelerationVelocityComponents(ECSWorld world, List<uint> entities)
+        {
+            addComponentToEntities(world, entities, new Velocity(1, 0));
+            addComponentToEntities(world, entities, new Acceleration(0, 0));
+            addComponentToEntities(world, entities, new Position(0, 0));
+        }
+
+        private static void addComponentToEntities<T>(ECSWorld world, List<uint> entities, T data) where T : struct
+        {
+            for (int i = 0; i < entities.Count; i++)
+            {
+                world.AddComponent(entities[i], data);
+            }
+        }
 
         [TestMethod]
         public void ECS_CreateAHundredKEntities()
         {
-            ECSWorld world = new ECSWorld();
-
-            MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
-
-            List<uint> entities = new List<uint>();
-            for (int i = 0; i < 100000; i++)
-            {
-                uint entity = world.CreateEntity();
-                world.AddComponent(entity, new Position(0, 0));
-                world.AddComponent(entity, new Velocity(1, 0));
-                world.AddComponent(entity, new Acceleration(0, 0));
-                entities.Add(entity);
-            }
+            testThatECSCanCreateNEntities(100000);
         }
 
         [TestMethod]
         public void ECS_Create1MillionEntities()
         {
+            testThatECSCanCreateNEntities(1000000);
+        }
+
+        private static void testThatECSCanCreateNEntities(int n)
+        {
             ECSWorld world = new ECSWorld();
 
             MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
 
-            List<uint> entities = new List<uint>();
-            for (int i = 0; i < 1000000; i++)
-            {
-                uint entity = world.CreateEntity();
-                world.AddComponent(entity, new Position(0, 0));
-                world.AddComponent(entity, new Velocity(1, 0));
-                world.AddComponent(entity, new Acceleration(0, 0));
-                entities.Add(entity);
-            }
+            List<uint> entities = createSeveralEntities(world, n);
+            addPositionAccelerationVelocityComponents(world, entities);
+
+            Assert.IsTrue(world.EntityCount == n);
         }
 
 
@@ -157,16 +149,8 @@ namespace SimplestECSUnitTests.ECS
 
             MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
 
-            List<uint> entities = new List<uint>();
-            for (int i = 0; i < 100000; i++)
-            {
-                uint entity = world.CreateEntity();
-                world.AddComponent(entity, new Position(0, 0));
-                world.AddComponent(entity, new Velocity(1, 0));
-                world.AddComponent(entity, new Acceleration(0, 0));
-                entities.Add(entity);
-            }
-
+            List<uint> entities = createSeveralEntities(world, 100000);
+            addPositionAccelerationVelocityComponents(world, entities);
 
             float framerate = 1f / 60f;
             for (float t = 0; t < 10f; t += framerate)

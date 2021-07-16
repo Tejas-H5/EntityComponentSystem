@@ -65,9 +65,9 @@ namespace ECSUnitTests
     {
         public MotionIntergratorSystem2D(ECSWorld world) : base(world) { }
 
-        protected override void InitSystem(ECSWorld world)
+        protected override void InitSystem()
         {
-            SelectComponentTypes(world,
+            SelectComponentTypes(
                 typeof(Velocity),
                 typeof(Position),
                 typeof(Acceleration)

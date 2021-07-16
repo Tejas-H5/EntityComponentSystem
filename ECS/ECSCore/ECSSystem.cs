@@ -18,7 +18,7 @@ namespace ECS
         public ECSSystem(ECSWorld world)
         {
             this.world = world;
-            InitSystem(world);
+            InitSystem();
         }
 
         /// <summary>
@@ -48,22 +48,22 @@ namespace ECS
 
         /// <summary>
         /// Call this function once in the overrided Init function with the types that
-        /// you want this system to handle. remember the order in which you passed in the types
-        /// because they will be used later.
+        /// you want this system to handle. Remember the order in which you passed in the types
+        /// because it is needed to use the function
+        /// <c>GetComponent&lt;T&gt;(int initializationOrder)</c> properly.
         /// </summary>
         /// <example>
         /// <code>
         /// protected override void Init(World world)
         /// { 
         ///     SelectComponentTypes(
-        ///         world,
         ///         typeof(YourComponent),
         ///         typeof(AnotherOneOfYourComponents)
         ///     );
         /// }
         /// </code>
         /// </example>
-        protected void SelectComponentTypes(ECSWorld world, params Type[] types)
+        protected void SelectComponentTypes(params Type[] types)
         {
             selectedComponentTypeIDs = new int[types.Length];
             componentIDs = new int[types.Length];
@@ -78,6 +78,30 @@ namespace ECS
         }
 
         public void Update(float deltaTime)
+        {
+            if(selectedComponentTypeIDs.Length == 1)
+            {
+                updateSingleComponent(deltaTime);
+            }
+            else
+            {
+                updateMultiComponent(deltaTime);
+            }
+        }
+
+        private void updateSingleComponent(float deltaTime)
+        {
+            IComponentList onlyList = selectedComponents[0];
+            int traversalComponentTypeID = onlyList.TypeID;
+            int traversalComponentID = -1;
+            while ((traversalComponentID = onlyList.GetNext(traversalComponentID)) != -1)
+            {
+                componentIDs[0] = traversalComponentID;
+                Iterate(deltaTime);
+            }
+        }
+
+        private void updateMultiComponent(float deltaTime)
         {
             int shortestListIndex = getShortestListIndex();
             IComponentList shortestList = selectedComponents[shortestListIndex];
@@ -101,6 +125,7 @@ namespace ECS
                 Iterate(deltaTime);
             }
         }
+
 
         private bool findOtherSelectedComponents(int traversalComponentTypeID, MutableList<ComponenttypeIndexPair> entityComponents)
         {
@@ -152,7 +177,7 @@ namespace ECS
         /// <summary>
         /// This function must call SelectComonentTypes.
         /// </summary>
-        protected abstract void InitSystem(ECSWorld world);
+        protected abstract void InitSystem();
 
 
         /// <summary>

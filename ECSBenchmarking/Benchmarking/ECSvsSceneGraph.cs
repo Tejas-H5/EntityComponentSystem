@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ECSUnitTests.Benchmarking
+namespace ECSBenchmarking
 {
     class ECSvsSceneGraph
     {

@@ -7,7 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\MinimalApplicationFramework\MinimalAF\MinimalAF.csproj" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ECS\ECS.csproj" />
   </ItemGroup>
 

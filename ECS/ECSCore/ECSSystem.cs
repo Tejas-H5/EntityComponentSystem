@@ -155,9 +155,11 @@ namespace ECS
 
             for (int i = 1; i < selectedComponents.Count; i++)
             {
-                if (selectedComponents[i].IterationCost < iterCost)
+                int thisIterCost = selectedComponents[i].IterationCost;
+                if (thisIterCost < iterCost)
                 {
                     shortestListIndex = i;
+                    iterCost = thisIterCost;
                 }
             }
 

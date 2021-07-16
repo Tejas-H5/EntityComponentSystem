@@ -87,7 +87,7 @@ namespace SimplestECSUnitTests.ECS
 
             MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
 
-            List<uint> entities = createSeveralEntities(world, 4);
+            List<uint> entities = createSeveralEntities(world, 100000);
             addPositionAccelerationVelocityComponents(world, entities);
 
             float framerate = 1f / 60f;
@@ -284,10 +284,8 @@ namespace SimplestECSUnitTests.ECS
         }
 
         /* TODO - Add the following tests:
-         * Iterate over multiple entities
-         * Deleting components
-         *   - makeing sure that the 
-         * 
+         * Removeing components
+         * Ensure that we are actually iterating through the shortest list of the selected components
          * 
          * 
          * 

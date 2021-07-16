@@ -37,6 +37,18 @@ namespace ECS
             componentDatabase = new ComponentDatabase(this);
         }
 
+        public uint[] CreateEntities(int number)
+        {
+            uint[] entities = new uint[number];
+
+            for(int i = 0; i < number; i++)
+            {
+                entities[i] = CreateEntity();
+            }
+
+            return entities;
+        }
+
         public uint CreateEntity()
         {
             if (freeList.Count > 0)
@@ -58,6 +70,14 @@ namespace ECS
         }
 
 
+        public void DestroyEntities(IList<uint> entities)
+        {
+            for(int i = 0; i < entities.Count; i++)
+            {
+                DestroyEntity(entities[i]);
+            }
+        }
+
         public void DestroyEntity(uint entityID)
         {
             if (!entities.ContainsKey(entityID))
@@ -77,12 +97,22 @@ namespace ECS
             freeList.Enqueue(entityID);
         }
 
+
         public void AddComponent<T>(uint entityID, T data) where T : struct
         {
             int typeID = componentDatabase.GetTypeID<T>();
 
             int componentID = componentDatabase.CreateComponent<T>(typeID, entityID, ref data);
-            entities[entityID].Add(new ComponenttypeIndexPair(typeID, componentID));
+
+            MutableList<ComponenttypeIndexPair> entityComponents = entities[entityID];
+
+#if DEBUG
+            int i = findComponentOfType(entityComponents, typeID);
+            if (i != -1)
+                throw new Exception("This component already exists on this type");
+#endif
+
+            entityComponents.Add(new ComponenttypeIndexPair(typeID, componentID));
         }
 
         public void RemoveComponent<T>(int componentID, uint entityID) where T : struct

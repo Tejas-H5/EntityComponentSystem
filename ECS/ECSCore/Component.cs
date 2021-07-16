@@ -4,7 +4,13 @@ using System.Text;
 
 namespace ECS
 {
-    internal struct Component<T>
+    /// <summary>
+    /// This struct is an ECS internal data structure that you probably don't need to use.
+    /// Ever. If you want to declare a struct as an ECS component, give it an [ECSComponent] Attribute
+    /// by putting [ECSComponent(sequentialComponentID)] above the decleration.
+    /// More info in the ECSComponentAttribute class documentation
+    /// </summary>
+    public struct Component<T>
     {
         //This ID is an index into an array, and c# uses ints and not uints to index into arrays
         public readonly int ID;

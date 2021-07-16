@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BenchmarkDotNet.Running;
+using IterationPatternBenchmarking.Benchmarks;
+using System;
 
 namespace IterationPatternBenchmarking
 {
@@ -6,7 +8,7 @@ namespace IterationPatternBenchmarking
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            BenchmarkRunner.Run<IterationPatternBenchmarks>();
         }
     }
 }

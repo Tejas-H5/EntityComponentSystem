@@ -58,12 +58,12 @@ namespace ECS
         {
             List<ECSComponentattributeTypePair> componentTypes = new List<ECSComponentattributeTypePair>();
 
-            Assembly[] allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            for(int i = 0; i < allAssemblies.Length; i++)
+            IEnumerable<Assembly> allAssemblies = getAssemblies();
+            foreach(Assembly asm in allAssemblies)
             {
                 try
                 {
-                    Type[] types = allAssemblies[i].GetTypes();
+                    Type[] types = asm.GetTypes();
                     extractAllRelevantTypes(destinationList: componentTypes, types);
                 }
                 catch
@@ -73,6 +73,37 @@ namespace ECS
             }
 
             return componentTypes;
+        }
+
+        //Thankyou 3Dave for your answer on https://stackoverflow.com/questions/851248/c-sharp-reflection-get-all-active-assemblies-in-a-solution
+        private static IEnumerable<Assembly> getAssemblies()
+        {
+            var list = new List<string>();
+            var queue = new Queue<Assembly>();
+
+            queue.Enqueue(Assembly.GetEntryAssembly());
+
+            do
+            {
+                var asm = queue.Dequeue();
+
+                yield return asm;
+
+                try
+                {
+                    foreach (var reference in asm.GetReferencedAssemblies())
+                        if (!list.Contains(reference.FullName))
+                        {
+                            queue.Enqueue(Assembly.Load(reference));
+                            list.Add(reference.FullName);
+                        }
+                }
+                catch(Exception e)
+                {
+                    //Do nothing
+                }
+            }
+            while (queue.Count > 0);
         }
 
         private static void extractAllRelevantTypes(List<ECSComponentattributeTypePair> destinationList, Type[] types)

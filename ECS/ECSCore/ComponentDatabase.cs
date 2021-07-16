@@ -11,10 +11,12 @@ namespace ECS
     // calling other functions here
     public class ComponentDatabase
     {
-        List<IComponentList> componentDatabase = new List<IComponentList>();
+        private List<IComponentList> componentDatabase = new List<IComponentList>();
+        private ECSWorld world;
 
-        public ComponentDatabase()
+        public ComponentDatabase(ECSWorld world)
         {
+            this.world = world;
             var enumerable = RegisteredComponents.OrderedTypes;
             foreach (KeyValuePair<Type, int> tIdPair in enumerable)
             {
@@ -24,12 +26,12 @@ namespace ECS
         }
 
 
-        private static IComponentList createComponentListInstanceWithReflection(Type t, int typeID)
+        private IComponentList createComponentListInstanceWithReflection(Type t, int typeID)
         {
             Type componentListTypeIncomplete = typeof(ComponentList<>);
             Type[] typeArgs = { t };
             Type componentListType = componentListTypeIncomplete.MakeGenericType(typeArgs);
-            object componentListInstance = Activator.CreateInstance(componentListType, typeID);
+            object componentListInstance = Activator.CreateInstance(componentListType, this, typeID);
             return (IComponentList)componentListInstance;
         }
 
@@ -69,6 +71,11 @@ namespace ECS
         {
             IComponentList components = componentDatabase[typeID];
             components.DestroyComponent(componentID);
+        }
+
+        internal void ComponentIDChanged(uint entityID, int typeID, int componentID)
+        {
+            world.ComponentIDChanged(entityID, typeID, componentID);
         }
     }
 }

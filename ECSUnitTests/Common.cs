@@ -9,7 +9,8 @@ namespace ECSUnitTests
     {
         Velocity,
         Position,
-        Acceleration
+        Acceleration,
+        Name
     }
 
     [ECSComponent((int)Components.Velocity)]
@@ -47,6 +48,18 @@ namespace ECSUnitTests
             Y = y;
         }
     }
+
+    [ECSComponent((int)Components.Name)]
+    struct Name
+    {
+        public string NameString;
+
+        public Name(string name)
+        {
+            NameString = name;
+        }
+    }
+
 
     class MotionIntergratorSystem2D : ECSSystem
     {

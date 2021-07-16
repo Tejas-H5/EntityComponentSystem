@@ -27,6 +27,8 @@ namespace SimplestECSUnitTests.ECS
             Assert.IsTrue(world.EntityCount == 4);
         }
 
+        private static void breakPoint() { }
+
         private static List<uint> createSeveralEntities(ECSWorld world, int number)
         {
             List<uint> entities = new List<uint>();
@@ -94,12 +96,59 @@ namespace SimplestECSUnitTests.ECS
                 motionIntegrator.Update(framerate);
             }
 
+            assertPos_XIsAt(world, entities, 10, 1);
+        }
+        private static void assertPos_XIsAt(ECSWorld world, List<uint> entities, float value, float tolerance)
+        {
             for (int i = 0; i < entities.Count; i++)
             {
+                if (!world.HasComponent<Position>(entities[i]))
+                    continue;
+
                 Position pos = world.GetComponentFromEntity<Position>(entities[i]);
-                Assert.IsTrue(pos.X > 9);
-                Assert.IsTrue(pos.X < 11);
+
+                Assert.IsTrue(MathF.Abs(pos.X - value) < tolerance);
             }
+        }
+
+
+        [TestMethod]
+        public void ECS_System_IgnoreIrellevantEntitiesWhenIterating()
+        {
+            ECSWorld world = new ECSWorld();
+
+            MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
+
+            List<uint> entities = createSeveralEntities(world, 1000000);
+
+            List<uint> subset = new List<uint>
+            {
+                entities[0],
+                entities[1],
+                entities[2],
+                entities[3],
+            };
+
+            addPositionAccelerationVelocityComponents(world, subset);
+            for(int i = 0; i < entities.Count; i++)
+            {
+                world.AddComponent(entities[i], new Name("Entity " + i));
+            }
+
+
+            int startTime = DateTime.Now.Millisecond;
+
+            float framerate = 1f / 60f;
+            for (float t = 0; t < 10f; t += framerate)
+            {
+                motionIntegrator.Update(framerate);
+            }
+
+            int timeTaken = DateTime.Now.Millisecond - startTime;
+
+            Assert.IsTrue(timeTaken < 300);
+
+            assertPos_XIsAt(world, subset, 10, 1);
         }
 
         private static void addPositionAccelerationVelocityComponents(ECSWorld world, List<uint> entities)
@@ -143,14 +192,71 @@ namespace SimplestECSUnitTests.ECS
 
 
         [TestMethod]
-        public void ECS_IterateOverAHundredKEntities()
+        public void ECS_IterateOverMultipleEntitiesAfterDeletionFromFront()
         {
             ECSWorld world = new ECSWorld();
 
             MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
 
-            List<uint> entities = createSeveralEntities(world, 100000);
+            List<uint> entities = createSeveralEntities(world, 10);
             addPositionAccelerationVelocityComponents(world, entities);
+
+            world.DestroyEntity(entities[0]);
+            world.DestroyEntity(entities[1]);
+            world.DestroyEntity(entities[2]);
+            world.DestroyEntity(entities[3]);
+
+            float framerate = 1f / 60f;
+            for (float t = 0; t < 10f; t += framerate)
+            {
+                motionIntegrator.Update(framerate);
+            }
+
+            assertPos_XIsAt(world, entities, 10, 1);
+        }
+
+        [TestMethod]
+        public void ECS_IterateOverMultipleEntitiesAfterDeletionFromBack()
+        {
+            ECSWorld world = new ECSWorld();
+
+            MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
+
+            List<uint> entities = createSeveralEntities(world, 10);
+            addPositionAccelerationVelocityComponents(world, entities);
+
+            world.DestroyEntity(entities[entities.Count - 1]);
+            world.DestroyEntity(entities[entities.Count - 2]);
+            world.DestroyEntity(entities[entities.Count - 3]);
+            world.DestroyEntity(entities[entities.Count - 4]);
+
+            float framerate = 1f / 60f;
+            for (float t = 0; t < 10f; t += framerate)
+            {
+                motionIntegrator.Update(framerate);
+            }
+
+            assertPos_XIsAt(world, entities, 10, 1);
+        }
+
+
+        [TestMethod]
+        public void ECS_ComponentsStayOnSameEntityAfterOthersAreDeleted()
+        {
+            ECSWorld world = new ECSWorld();
+
+            MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
+
+            List<uint> entities = createSeveralEntities(world, 10);
+            addPositionAccelerationVelocityComponents(world, entities);
+            
+            world.AddComponent(entities[entities.Count - 1], new Name("Usain"));
+            world.GetComponentFromEntity<Velocity>(entities[entities.Count - 1]).X = 2;
+
+            world.DestroyEntity(entities[0]);
+            world.DestroyEntity(entities[1]);
+            world.DestroyEntity(entities[2]);
+            world.DestroyEntity(entities[3]);
 
             float framerate = 1f / 60f;
             for (float t = 0; t < 10f; t += framerate)
@@ -160,9 +266,20 @@ namespace SimplestECSUnitTests.ECS
 
             for (int i = 0; i < entities.Count; i++)
             {
+                if (!world.HasComponent<Position>(entities[i]))
+                    continue;
+
                 Position pos = world.GetComponentFromEntity<Position>(entities[i]);
-                Assert.IsTrue(pos.X > 9);
-                Assert.IsTrue(pos.X < 11);
+
+                if(pos.X > 19 && pos.X < 21)
+                {
+                    Assert.IsTrue(world.GetComponentFromEntity<Name>(entities[entities.Count - 1]).NameString == "Usain");
+                }
+                else
+                {
+                    Assert.IsTrue(pos.X > 9);
+                    Assert.IsTrue(pos.X < 11);
+                }
             }
         }
 

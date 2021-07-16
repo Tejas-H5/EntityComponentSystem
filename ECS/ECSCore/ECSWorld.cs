@@ -34,7 +34,7 @@ namespace ECS
 
         public ECSWorld()
         {
-            componentDatabase = new ComponentDatabase();
+            componentDatabase = new ComponentDatabase(this);
         }
 
         public uint CreateEntity()
@@ -167,6 +167,29 @@ namespace ECS
             }
 
             return ref componentDatabase.GetComponentList<T>(typeID)[componentID].Data;
+        }
+
+        internal void ComponentIDChanged(uint entityID, int typeID, int newComponentID)
+        {
+            MutableList<ComponenttypeIndexPair> components = GetAttachedComponents(entityID);
+            for(int i = 0; i < components.Count; i++)
+            {
+                if (components[i].ComponentType == typeID)
+                    components[i].ComponentID = newComponentID;
+            }
+        }
+
+        public bool HasComponent<T>(uint entityID)
+        {
+            int typeID = RegisteredComponents.LookupTypeID(typeof(T));
+            MutableList<ComponenttypeIndexPair> components = GetAttachedComponents(entityID);
+            for (int i = 0; i < components.Count; i++)
+            {
+                if (components[i].ComponentType == typeID)
+                    return true;
+            }
+
+            return false;
         }
     }
 }

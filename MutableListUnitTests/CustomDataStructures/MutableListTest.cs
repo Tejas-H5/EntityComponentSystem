@@ -64,6 +64,9 @@ namespace SimplestECSUnitTests.CustomDataStructures
             }
         }
 
+
+#if DEBUG
+
         [TestMethod]
         public void Add_ShouldntReallocateIfNotNeeded()
         {
@@ -78,6 +81,9 @@ namespace SimplestECSUnitTests.CustomDataStructures
 
             Assert.IsTrue(list.Reallocations == 0);
         }
+#endif
+
+#if DEBUG
 
         [TestMethod]
         public void Add_ShouldReallocateIfNeeded()
@@ -96,6 +102,7 @@ namespace SimplestECSUnitTests.CustomDataStructures
 
             Assert.IsTrue(list.Reallocations == 1);
         }
+#endif
 
         [TestMethod]
         public void RemoveAt_ShouldRemoveFromStarOfList()
@@ -221,6 +228,7 @@ namespace SimplestECSUnitTests.CustomDataStructures
             AssertListsEqual(list, expected);
         }
 
+#if DEBUG
         [TestMethod]
         public void Clear_ShouldntReallocate()
         {
@@ -237,6 +245,7 @@ namespace SimplestECSUnitTests.CustomDataStructures
 
             Assert.IsTrue(list.Reallocations == 0);
         }
+#endif
 
         private static void RefreshList(MutableList<int> list)
         {
@@ -249,7 +258,7 @@ namespace SimplestECSUnitTests.CustomDataStructures
             }
         }
 
-
+#if DEBUG
         [TestMethod]
         public void Trim_ShouldReallocate()
         {
@@ -268,7 +277,9 @@ namespace SimplestECSUnitTests.CustomDataStructures
 
             Assert.IsTrue(list.Reallocations == 8);
         }
+#endif
 
+#if DEBUG
         [TestMethod]
         public void Trim_ShouldntReallocateToLessThanInitialCapacity()
         {
@@ -287,5 +298,6 @@ namespace SimplestECSUnitTests.CustomDataStructures
 
             Assert.IsTrue(list.Reallocations == 0);
         }
+#endif
     }
 }

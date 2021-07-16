@@ -12,8 +12,6 @@ namespace ECS
         //The entity that this component is attached to
         public uint EntityID;
 
-        public bool IsDestroyed;
-
         //The actual data. Since structs can't use inheritance, I have used composition like this
         public T Data;
 
@@ -22,7 +20,6 @@ namespace ECS
             ID = iD;
             EntityID = entityID;
             Data = data;
-            IsDestroyed = false;
         }
     }
 }

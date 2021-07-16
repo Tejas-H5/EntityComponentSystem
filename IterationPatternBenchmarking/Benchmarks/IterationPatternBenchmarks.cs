@@ -47,6 +47,8 @@ namespace IterationPatternBenchmarking.Benchmarks
 
         List<IGenericList> componentDoublePointer = new List<IGenericList>();
 
+        int[] componentIDs = new int[3];
+
         public IterationPatternBenchmarks()
         {
             InitPureStructArrays();
@@ -157,6 +159,30 @@ namespace IterationPatternBenchmarking.Benchmarks
                 ListObject<Position> posList = (ListObject<Position>)componentDoublePointer[2];
                 verlet(ref accelList[i], ref velocityList[i], ref posList[i]);
             }
+        }
+
+
+
+        [Benchmark]
+        public void IterateNestedComponentWrappedStructsThroughComponentIDArray()
+        {
+            for (int i = 0; i < NUMELEMENTS; i++)
+            {
+                componentIDs[0] = i;
+                componentIDs[1] = i;
+                componentIDs[2] = i;
+
+                Iterate();
+            }
+        }
+
+        private void Iterate()
+        {
+            ListObject<Acceleration> accelList = (ListObject<Acceleration>)componentDoublePointer[0];
+            ListObject<Velocity> velocityList = (ListObject<Velocity>)componentDoublePointer[1];
+            ListObject<Position> posList = (ListObject<Position>)componentDoublePointer[2];
+
+            verlet(ref accelList[componentIDs[0]], ref velocityList[componentIDs[1]], ref posList[componentIDs[2]]);
         }
     }
 }

@@ -119,7 +119,9 @@ namespace ECS.CustomDataStructures
             Array.Copy(_backingArray, 0, newArray, 0, _length);
             _backingArray = newArray;
 
+#if DEBUG
             Reallocations++;
+#endif
         }
 
         public void RemoveAt(int index)

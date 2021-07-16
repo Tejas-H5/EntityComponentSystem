@@ -1,6 +1,8 @@
 ﻿using BenchmarkDotNet.Attributes;
 using ECS;
 using ECS.CustomDataStructures;
+using ECSBenchmarking.SceneGraph;
+using Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +12,7 @@ namespace ECSBenchmarking
     [MemoryDiagnoser]
     [Orderer(BenchmarkDotNet.Order.SummaryOrderPolicy.FastestToSlowest)]
     [RankColumn]
-    public class ECSvsHardcodedBenchmarks
+    public class ECSvsOthersBenchmarks
     {
         const float FRAMERATE = 1f / 60f;
         const int NUMELEMENTS = 10000;
@@ -21,6 +23,8 @@ namespace ECSBenchmarking
 
         uint[] entities;
 
+        SGObject sceenGraphRoot = new SGObject();
+
         //This one should be faster, since it has no constraints like the ECS.
         //but How much faster? let us find out
         HardcodedMotionIntergratorSystem2D hardcodedMotionIntegrator;
@@ -29,10 +33,11 @@ namespace ECSBenchmarking
         MutableList<Velocity> velocities;
         MutableList<Position> positions;
 
-        public ECSvsHardcodedBenchmarks()
+        public ECSvsOthersBenchmarks()
         {
             InitNormalECS();
             InitHardcodedECS();
+            InitSceneGraph();
         }
 
         private void InitNormalECS()
@@ -70,7 +75,19 @@ namespace ECSBenchmarking
 
             hardcodedMotionIntegrator = new HardcodedMotionIntergratorSystem2D(velocities, accels, positions);
         }
+        private void InitSceneGraph()
+        {
+            for (int i = 0; i < NUMELEMENTS; i++)
+            {
+                SGObject obj = new SGObject();
 
+                obj.AddComponent(new PositionComponent(0, 0));
+                obj.AddComponent(new VelocityComponent(0.5f, 0));
+                obj.AddComponent(new AccelerationComponent(0, 0));
+
+                sceenGraphRoot.AddChild(obj);
+            }
+        }
 
         [Benchmark]
         public void ECSUpdate()
@@ -83,6 +100,12 @@ namespace ECSBenchmarking
         public void HardcodedECSUpdate()
         {
             hardcodedMotionIntegrator.Update(FRAMERATE);
+        }
+
+        [Benchmark]
+        public void SceneGraphUpdate()
+        {
+            sceenGraphRoot.Update(FRAMERATE);
         }
     }
 }

@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ECSBenchmarking
+namespace Common
 {
-    enum Components
+    public enum Components
     {
         Velocity,
         Position,
@@ -68,7 +68,7 @@ namespace ECSBenchmarking
         }
     }
 
-    class MotionIntergratorSystem2D : ECSSystem
+    public class MotionIntergratorSystem2D : ECSSystem
     {
         public MotionIntergratorSystem2D(ECSWorld world) : base(world) { }
 
@@ -105,7 +105,7 @@ namespace ECSBenchmarking
         }
     }
 
-    class HardcodedMotionIntergratorSystem2D
+    public class HardcodedMotionIntergratorSystem2D
     {
         MutableList<Velocity> velocities;
         MutableList<Acceleration> accelerations;

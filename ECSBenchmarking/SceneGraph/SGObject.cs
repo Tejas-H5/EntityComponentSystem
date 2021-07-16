@@ -14,6 +14,9 @@ namespace ECSBenchmarking.SceneGraph
         }
     }
 
+    //Highly simplified, you probably won't be able to use this in any game engine
+    //Also it's technically not a Scene Graph per-se, since those usually take spacial representation 
+    //into account somehow, but those details are irrelevant for my purposes
     public class SGObject
     {
         private List<SGObject> children = new List<SGObject>();
@@ -114,10 +117,5 @@ namespace ECSBenchmarking.SceneGraph
                 children[i].Update(deltaTime);
             }
         }
-
-
-        //public void PreUpdate(){ ... }, and so on as seen in SGComponent also need to be defined in a real SceneGraph
-        //This could be a naive implementation tho. 
-        //If so, I would like to be informed
     }
 }

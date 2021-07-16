@@ -4,7 +4,6 @@ using System.Text;
 
 namespace ECSBenchmarking.SceneGraph
 {
-    //Highly simplified
     public abstract class SGComponent
     {
         protected SGObject attachedObject;

@@ -10,8 +10,8 @@ namespace ECS
     //Can't call this System because of the C# System namespace.
     public abstract class ECSSystem
     {
-        private List<IComponentList> selectedComponents = new List<IComponentList>();
-        private BitArray setOfSelectedComponents = new BitArray(0);
+        private MutableList<IComponentList> selectedComponents = new MutableList<IComponentList>();
+        private int[] selectedComponentTypeIDs;
         private int[] componentIDs;
         private ECSWorld world;
 
@@ -22,6 +22,9 @@ namespace ECS
         }
 
         /// <summary>
+        /// <para>
+        /// Mainly used in the Iterate() function to get the selected components.
+        /// </para>
         /// <para>
         /// This only works if you specify initializationOrder correctly.
         /// It is a zero based index corresponding to the order in which
@@ -62,31 +65,16 @@ namespace ECS
         /// </example>
         protected void SelectComponentTypes(ECSWorld world, params Type[] types)
         {
+            selectedComponentTypeIDs = new int[types.Length];
+            componentIDs = new int[types.Length];
+
             for (int i = 0; i < types.Length; i++)
             {
-                SelectComponentType(world, types[i]);
+                int typeID = world.GetTypeID(types[i]);
+
+                selectedComponents.Add(world.GetComponentList(typeID));
+                selectedComponentTypeIDs[i] = typeID;
             }
-
-            componentIDs = new int[types.Length];
-        }
-
-        private void SelectComponentType(ECSWorld world, Type type)
-        {
-            int typeID = world.GetTypeID(type);
-
-            selectedComponents.Add(world.GetComponentList(typeID));
-
-            addToSetOfSelectedComponents(typeID);
-        }
-
-        private void addToSetOfSelectedComponents(int typeID)
-        {
-            if (setOfSelectedComponents.Length < typeID + 1)
-            {
-                setOfSelectedComponents.Length = typeID + 1;
-            }
-
-            setOfSelectedComponents.Set(typeID, true);
         }
 
         public void Update(float deltaTime)
@@ -95,6 +83,7 @@ namespace ECS
             IComponentList shortestList = selectedComponents[shortestListIndex];
 
             int traversalComponentID = -1;
+            int traversalComponentTypeID = shortestList.TypeID;
             while ((traversalComponentID = shortestList.GetNext(traversalComponentID)) != -1)
             {
                 uint entityID = shortestList.GetEntityID(traversalComponentID);
@@ -106,24 +95,27 @@ namespace ECS
                 componentIDs[shortestListIndex] = traversalComponentID;
 
 
-                if (!findOtherSelectedComponents(traversalComponentID, entityComponents))
+                if (!findOtherSelectedComponents(traversalComponentTypeID, entityComponents))
                     continue;
 
                 Iterate(deltaTime);
             }
         }
 
-        private bool findOtherSelectedComponents(int traversalComponent, MutableList<ComponenttypeIndexPair> entityComponents)
+        private bool findOtherSelectedComponents(int traversalComponentTypeID, MutableList<ComponenttypeIndexPair> entityComponents)
         {
             int numFound = 1;
             for (int j = 0; j < entityComponents.Count; j++)
             {
-                if (j == traversalComponent)
+                ref ComponenttypeIndexPair compIndexPair = ref entityComponents[j];
+
+                if (compIndexPair.ComponentType == traversalComponentTypeID)
                     continue;
 
-                if (IsSelectedType(entityComponents[j].ComponentType))
+                int selectedComponent = findSelectedTypeIndex(compIndexPair.ComponentType);
+                if (selectedComponent != -1)
                 {
-                    componentIDs[j] = traversalComponent;
+                    componentIDs[selectedComponent] = compIndexPair.ComponentID;
                     numFound++;
                 }
             }
@@ -147,12 +139,14 @@ namespace ECS
             return shortestListIndex;
         }
 
-        private bool IsSelectedType(int typeID)
+        private int findSelectedTypeIndex(int typeID)
         {
-            if (typeID >= setOfSelectedComponents.Length)
-                return false;
-
-            return setOfSelectedComponents.Get(typeID);
+            for(int i = 0; i < selectedComponentTypeIDs.Length; i++)
+            {
+                if (selectedComponentTypeIDs[i] == typeID)
+                    return i;
+            }
+            return -1;
         }
 
         /// <summary>

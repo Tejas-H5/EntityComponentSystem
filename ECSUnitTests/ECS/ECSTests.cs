@@ -1,4 +1,5 @@
 ﻿using ECS;
+using ECSUnitTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -6,83 +7,6 @@ using System.Text;
 
 namespace SimplestECSUnitTests.ECS
 {
-    enum Components
-    {
-        Velocity,
-        Position,
-        Acceleration
-    }
-
-    [ECSComponent((int)Components.Velocity)]
-    struct Velocity
-    {
-        public float X, Y;
-
-        public Velocity(float x, float y)
-        {
-            X = x;
-            Y = y;
-        }
-    }
-
-    [ECSComponent((int)Components.Position)]
-    struct Position
-    {
-        public float X, Y;
-
-        public Position(float x, float y)
-        {
-            X = x;
-            Y = y;
-        }
-    }
-
-    [ECSComponent((int)Components.Acceleration)]
-    struct Acceleration
-    {
-        public float X, Y;
-
-        public Acceleration(float x, float y)
-        {
-            X = x;
-            Y = y;
-        }
-    }
-
-    class MotionIntergratorSystem2D : ECSSystem
-    {
-        public MotionIntergratorSystem2D(ECSWorld world) : base(world) {}
-
-        protected override void InitSystem(ECSWorld world)
-        {
-            SelectComponentTypes(world,
-                typeof(Velocity),
-                typeof(Position),
-                typeof(Acceleration)
-            );
-        }
-
-        protected override void Iterate(float deltaTime)
-        {
-            ref Velocity vel = ref GetComponent<Velocity>(0);
-            ref Position pos = ref GetComponent<Position>(1);
-            ref Acceleration accel = ref GetComponent<Acceleration>(2);
-
-            float halfDelta = 0.5f * deltaTime;
-
-            //Verlet intergration
-            pos.X += vel.X * halfDelta;
-            pos.Y += vel.Y * halfDelta;
-
-            vel.X += accel.X * deltaTime;
-            vel.Y += accel.Y * deltaTime;
-
-            pos.X += vel.X * halfDelta;
-            pos.Y += vel.Y * halfDelta;
-        }
-    }
-
-
     [TestClass]
     public class ECSTests
     {
@@ -146,5 +70,56 @@ namespace SimplestECSUnitTests.ECS
             Assert.IsTrue(pos.X > 9);
             Assert.IsTrue(pos.X < 11);
         }
+
+
+        [TestMethod]
+        public void ECS_IterateOverMultipleEntities()
+        {
+            ECSWorld world = new ECSWorld();
+
+            MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
+
+            List<uint> entities = new List<uint>();
+            for(int i = 0; i < 4; i++)
+            {
+                uint entity = world.CreateEntity();
+                world.AddComponent(entity, new Position(0, 0));
+                world.AddComponent(entity, new Velocity(1, 0));
+                world.AddComponent(entity, new Acceleration(0, 0));
+                entities.Add(entity);
+            }
+            
+
+            float framerate = 1f / 60f;
+            for (float t = 0; t < 10f; t += framerate)
+            {
+                motionIntegrator.Update(framerate);
+            }
+
+            List<Position> positions = new List<Position>();
+
+            for (int i = 0; i < entities.Count; i++)
+            {
+                Position pos = world.GetComponentFromEntity<Position>(entities[i]);
+                positions.Add(pos);
+            }
+
+            for (int i = 0; i < entities.Count; i++)
+            {
+                Position pos = world.GetComponentFromEntity<Position>(entities[i]);
+                Assert.IsTrue(pos.X > 9);
+                Assert.IsTrue(pos.X < 11);
+            }
+        }
+
+        /* TODO - Add the following tests:
+         * Iterate over multiple entities
+         * Deleting components
+         *   - makeing sure that the 
+         * 
+         * 
+         * 
+         * 
+         */
     }
 }

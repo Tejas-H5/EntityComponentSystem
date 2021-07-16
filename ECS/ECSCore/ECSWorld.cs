@@ -81,7 +81,7 @@ namespace ECS
         {
             int typeID = componentDatabase.GetTypeID<T>();
 
-            int componentID = componentDatabase.CreateComponent<T>(typeID, entityID, data);
+            int componentID = componentDatabase.CreateComponent<T>(typeID, entityID, ref data);
             entities[entityID].Add(new ComponenttypeIndexPair(typeID, componentID));
         }
 

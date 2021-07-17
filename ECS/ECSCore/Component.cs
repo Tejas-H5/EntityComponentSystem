@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace ECS
@@ -10,7 +11,8 @@ namespace ECS
     /// by putting [ECSComponent(sequentialComponentID)] above the decleration.
     /// More info in the ECSComponentAttribute class documentation
     /// </summary>
-    public struct Component<T>
+
+    public struct Component<T> where T : struct
     {
         //This ID is an index into an array, and c# uses ints and not ints to index into arrays
         public readonly int ID;

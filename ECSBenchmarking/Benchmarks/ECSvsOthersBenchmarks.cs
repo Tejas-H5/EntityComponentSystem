@@ -14,7 +14,7 @@ namespace ECSBenchmarking
     [RankColumn]
     public class ECSvsOthersBenchmarks
     {
-        [Params(100000)]
+        [Params(10000)]
         public int NumberOfElements { get; set; }
 
 
@@ -100,13 +100,13 @@ namespace ECSBenchmarking
         }
 
 
-        [Benchmark]
+        //[Benchmark]
         public void HardcodedECSUpdate()
         {
             hardcodedMotionIntegrator.Update(FRAMERATE);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void SceneGraphUpdate()
         {
             sceenGraphRoot.Update(FRAMERATE);

@@ -8,6 +8,8 @@ namespace ECS.CustomDataStructures
     /// <para>
     /// A List implementation except the indexer returns by reference, 
     /// so objects in this list may by directly modified.
+    /// This data structure is mainly designed to be used by the ECS component lists to iterate over structs.
+    /// The normal List is actually a little faster for iterating over reference types.
     /// </para>
     /// 
     /// <para>
@@ -23,8 +25,6 @@ namespace ECS.CustomDataStructures
     /// <para>
     /// Most features of the System.Collections.Generic.List have been discarded except the usefull ones, as well
     /// as a Swap method, as I have been using that a lot as well.
-    /// This data structure is mainly designed to be used by the ECS component database, the normal List is probably 
-    /// better for everything else
     /// </para>
     /// </summary>
     public class MutableList<T>

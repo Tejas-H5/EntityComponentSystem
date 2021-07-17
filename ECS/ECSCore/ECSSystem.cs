@@ -10,16 +10,18 @@ namespace ECS
     //Can't call this System because of the C# System namespace.
     public abstract class ECSSystem
     {
-        protected List<IComponentList> selectedComponents = new List<IComponentList>();
-        protected int[] selectedComponentTypeIDs;
-        protected int[] componentIDs;
-        protected ECSWorld world;
+        private List<IComponentList> selectedComponents = new List<IComponentList>();
+        private int[] selectedComponentTypeIDs;
+        private int[] componentIDs;
+        private ECSWorld world;
 
         public ECSSystem(ECSWorld world)
         {
             this.world = world;
             InitSystem();
         }
+
+        
 
         /// <summary>
         /// <para>
@@ -117,7 +119,6 @@ namespace ECS
 
                 componentIDs[shortestListIndex] = traversalComponentID;
 
-
                 if (!findOtherSelectedComponents(traversalComponentTypeID, entityComponents))
                     continue;
 
@@ -133,6 +134,7 @@ namespace ECS
         private bool findOtherSelectedComponents(int traversalComponentTypeID, MutableList<ComponenttypeIndexPair> entityComponents)
         {
             int numFound = 1;
+
             for (int j = 0; j < entityComponents.Count; j++)
             {
                 ref ComponenttypeIndexPair compIndexPair = ref entityComponents[j];

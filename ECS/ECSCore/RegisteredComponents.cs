@@ -83,11 +83,8 @@ namespace ECS
 
             foreach(Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
             {
-                if (!list.Contains(asm.FullName))
-                {
-                    queue.Enqueue(asm);
-                    list.Add(asm.FullName);
-                }
+                queue.Enqueue(asm);
+                list.Add(asm.FullName);
             }
 
             do

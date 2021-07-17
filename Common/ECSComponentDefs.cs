@@ -72,10 +72,6 @@ namespace Common
     {
         public MotionIntergratorSystem2D(ECSWorld world) : base(world) { }
 
-        ComponentList<Velocity> velList;
-        ComponentList<Position> posList;
-        ComponentList<Acceleration> accelList;
-
         protected override void InitSystem()
         {
             SelectComponentTypes(
@@ -83,17 +79,13 @@ namespace Common
                 typeof(Position),
                 typeof(Acceleration)
             );
-
-            velList = (ComponentList<Velocity>)selectedComponents[0];
-            posList = (ComponentList<Position>)selectedComponents[1];
-            accelList = (ComponentList<Acceleration>)selectedComponents[2];
         }
 
         protected override void Iterate(float deltaTime)
         {
-            ref Velocity vel = ref velList[componentIDs[0]].Data;
-            ref Position pos = ref posList[componentIDs[1]].Data;
-            ref Acceleration accel = ref accelList[componentIDs[2]].Data;
+            ref Velocity vel = ref GetComponent<Velocity>(0);
+            ref Position pos = ref GetComponent<Position>(1);
+            ref Acceleration accel = ref GetComponent<Acceleration>(2);
 
             float halfDelta = 0.5f * deltaTime;
 

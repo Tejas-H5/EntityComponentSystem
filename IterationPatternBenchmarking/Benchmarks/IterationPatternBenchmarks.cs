@@ -191,7 +191,6 @@ namespace IterationPatternBenchmarking.Benchmarks
         }
 
 
-
         [Benchmark]
         public void IterateNestedComponentWrappedStructsThroughComponentIDArray()
         {

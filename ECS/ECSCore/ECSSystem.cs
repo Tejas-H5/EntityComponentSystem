@@ -10,9 +10,9 @@ namespace ECS
     //Can't call this System because of the C# System namespace.
     public abstract class ECSSystem
     {
-        private List<IComponentList> selectedComponentLists = new List<IComponentList>();
-        private int[] selectedComponentTypeIDs;
-        private int[] componentIDs;
+        protected List<IComponentList> selectedComponentLists = new List<IComponentList>();
+        protected int[] selectedComponentTypeIDs;
+        protected int[] componentIDs;
         private ECSWorld world;
 
         public ECSSystem(ECSWorld world)
@@ -20,8 +20,6 @@ namespace ECS
             this.world = world;
             InitSystem();
         }
-
-        
 
         /// <summary>
         /// <para>
@@ -42,7 +40,7 @@ namespace ECS
         /// </summary>
         protected ref T GetComponent<T>(int initializationOrder) where T : struct
         {
-            ComponentList<T> components = (ComponentList<T>)selectedComponentLists[initializationOrder];
+            ComponentList<T> components = StaticComponentListCache<T>.Get(world.WorldID);
             int componentID = componentIDs[initializationOrder];
             return ref components[componentID].Data;
         }
@@ -81,6 +79,11 @@ namespace ECS
 
         public void Update(float deltaTime)
         {
+            for(int i = 0; i < selectedComponentLists.Count; i++)
+            {
+                selectedComponentLists[i].SendToStaticCache(world.WorldID);
+            }
+
             if(selectedComponentTypeIDs.Length == 1)
             {
                 updateSingleComponent(deltaTime);
@@ -132,28 +135,6 @@ namespace ECS
         /// </summary>
         protected abstract void Iterate(float deltaTime);
 
-        private bool findOtherSelectedComponents(int traversalComponentTypeID, MutableList<ComponenttypeIndexPair> entityComponents)
-        {
-            int numFound = 1;
-
-            for (int j = 0; j < entityComponents.Count; j++)
-            {
-                ref ComponenttypeIndexPair compIndexPair = ref entityComponents[j];
-
-                if (compIndexPair.ComponentType == traversalComponentTypeID)
-                    continue;
-
-                int selectedComponent = findSelectedTypeIndex(compIndexPair.ComponentType);
-                if (selectedComponent != -1)
-                {
-                    componentIDs[selectedComponent] = compIndexPair.ComponentID;
-                    numFound++;
-                }
-            }
-
-            return numFound == selectedComponentLists.Count;
-        }
-
         private int getShortestListIndex()
         {
             int shortestListIndex = 0;
@@ -172,15 +153,36 @@ namespace ECS
             return shortestListIndex;
         }
 
-        private int findSelectedTypeIndex(int typeID)
+        private bool findOtherSelectedComponents(int traversalComponentTypeID, MutableList<ComponenttypeIndexPair> entityComponents)
         {
-            for(int i = 0; i < selectedComponentTypeIDs.Length; i++)
+            for (int j = 0; j < selectedComponentTypeIDs.Length; j++)
             {
-                if (selectedComponentTypeIDs[i] == typeID)
-                    return i;
+                if (j == traversalComponentTypeID)
+                    continue;
+
+                int thisComponentType = selectedComponentTypeIDs[j];
+                int thisComponentID = -1;
+
+                for(int k = 0; k < entityComponents.Count; k++)
+                {
+                    ref ComponenttypeIndexPair compIndexPair = ref entityComponents[k];
+                    if (compIndexPair.ComponentType == thisComponentType)
+                    {
+                        thisComponentID = compIndexPair.ComponentID;
+                        break;
+                    }
+                }
+
+                bool aSingleComponentWasntFound = thisComponentID == -1;
+                if (aSingleComponentWasntFound)
+                    return false;
+
+                componentIDs[j] = thisComponentID;
             }
-            return -1;
+
+            return true;
         }
+
 
         /// <summary>
         /// This function must call SelectComonentTypes.

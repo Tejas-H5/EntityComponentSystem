@@ -181,6 +181,13 @@ namespace ECS
 
         internal MutableList<ComponenttypeIndexPair> GetAttachedComponents(int entityID)
         {
+#if DEBUG
+            if (entityID < 0 || entityID >= entityList.Count)
+            {
+                int i = 5;
+                throw new IndexOutOfRangeException();
+            }
+#endif
             return entityList[entityID];
         }
 

@@ -16,6 +16,8 @@ namespace ECS
 
         public int GetEntityID(int compID);
 
+        public void SendToStaticCache(int worldID);
+
         public int TypeID { get; }
         public int IterationCost { get; }
     }
@@ -132,6 +134,11 @@ namespace ECS
         public int GetEntityID(int componentID)
         {
             return components[componentID].EntityID;
+        }
+
+        public void SendToStaticCache(int worldID)
+        {
+            StaticComponentListCache<T>.Set(worldID, this);
         }
     }
 }

@@ -14,8 +14,11 @@ namespace ECSBenchmarking
     [RankColumn]
     public class ECSvsOthersBenchmarks
     {
+        [Params(100000)]
+        public int NumberOfElements { get; set; }
+
+
         const float FRAMERATE = 1f / 60f;
-        const int NUMELEMENTS = 10000;
 
         ECSWorld world = new ECSWorld();
 
@@ -33,7 +36,8 @@ namespace ECSBenchmarking
         MutableList<Velocity> velocities;
         MutableList<Position> positions;
 
-        public ECSvsOthersBenchmarks()
+        [GlobalSetup]
+        public void GlobalSetup()
         {
             InitNormalECS();
             InitHardcodedECS();
@@ -43,7 +47,7 @@ namespace ECSBenchmarking
         private void InitNormalECS()
         {
             motionIntegrator = new MotionIntergratorSystem2D(world);
-            entities = world.CreateEntities(NUMELEMENTS);
+            entities = world.CreateEntities(NumberOfElements);
 
             for (int i = 0; i < entities.Length; i++)
             {
@@ -55,20 +59,20 @@ namespace ECSBenchmarking
 
         private void InitHardcodedECS()
         {
-            accels = new MutableList<Acceleration>(NUMELEMENTS);
-            for(int i = 0; i < NUMELEMENTS; i++)
+            accels = new MutableList<Acceleration>(NumberOfElements);
+            for(int i = 0; i < NumberOfElements; i++)
             {
                 accels.Add(new Acceleration());
             }
 
-            velocities = new MutableList<Velocity>(NUMELEMENTS);
-            for (int i = 0; i < NUMELEMENTS; i++)
+            velocities = new MutableList<Velocity>(NumberOfElements);
+            for (int i = 0; i < NumberOfElements; i++)
             {
                 velocities.Add(new Velocity(0.5f,0));
             }
 
-            positions = new MutableList<Position>(NUMELEMENTS);
-            for (int i = 0; i < NUMELEMENTS; i++)
+            positions = new MutableList<Position>(NumberOfElements);
+            for (int i = 0; i < NumberOfElements; i++)
             {
                 positions.Add(new Position());
             }
@@ -77,7 +81,7 @@ namespace ECSBenchmarking
         }
         private void InitSceneGraph()
         {
-            for (int i = 0; i < NUMELEMENTS; i++)
+            for (int i = 0; i < NumberOfElements; i++)
             {
                 SGObject obj = new SGObject();
 

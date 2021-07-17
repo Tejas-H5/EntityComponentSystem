@@ -10,7 +10,7 @@ namespace ECS
     //Can't call this System because of the C# System namespace.
     public abstract class ECSSystem
     {
-        private List<IComponentList> selectedComponents = new List<IComponentList>();
+        private List<IComponentList> selectedComponentLists = new List<IComponentList>();
         private int[] selectedComponentTypeIDs;
         private int[] componentIDs;
         private ECSWorld world;
@@ -42,7 +42,7 @@ namespace ECS
         /// </summary>
         protected ref T GetComponent<T>(int initializationOrder) where T : struct
         {
-            ComponentList<T> components = (ComponentList<T>)selectedComponents[initializationOrder];
+            ComponentList<T> components = (ComponentList<T>)selectedComponentLists[initializationOrder];
             int componentID = componentIDs[initializationOrder];
             return ref components[componentID].Data;
         }
@@ -74,7 +74,7 @@ namespace ECS
             {
                 int typeID = world.GetTypeID(types[i]);
 
-                selectedComponents.Add(world.GetComponentList(typeID));
+                selectedComponentLists.Add(world.GetComponentList(typeID));
                 selectedComponentTypeIDs[i] = typeID;
             }
         }
@@ -93,8 +93,9 @@ namespace ECS
 
         private void updateSingleComponent(float deltaTime)
         {
-            IComponentList onlyList = selectedComponents[0];
+            IComponentList onlyList = selectedComponentLists[0];
             int traversalComponentID = -1;
+
             while ((traversalComponentID = onlyList.GetNext(traversalComponentID)) != -1)
             {
                 componentIDs[0] = traversalComponentID;
@@ -105,16 +106,16 @@ namespace ECS
         private void updateMultiComponent(float deltaTime)
         {
             int shortestListIndex = getShortestListIndex();
-            IComponentList shortestList = selectedComponents[shortestListIndex];
+            IComponentList shortestList = selectedComponentLists[shortestListIndex];
 
             int traversalComponentID = -1;
             int traversalComponentTypeID = shortestList.TypeID;
             while ((traversalComponentID = shortestList.GetNext(traversalComponentID)) != -1)
             {
-                uint entityID = shortestList.GetEntityID(traversalComponentID);
+                int entityID = shortestList.GetEntityID(traversalComponentID);
                 MutableList<ComponenttypeIndexPair> entityComponents = world.GetAttachedComponents(entityID);
 
-                if (entityComponents.Count < selectedComponents.Count)
+                if (entityComponents.Count < selectedComponentLists.Count)
                     continue;
 
                 componentIDs[shortestListIndex] = traversalComponentID;
@@ -150,17 +151,17 @@ namespace ECS
                 }
             }
 
-            return numFound == selectedComponents.Count;
+            return numFound == selectedComponentLists.Count;
         }
 
         private int getShortestListIndex()
         {
             int shortestListIndex = 0;
-            int iterCost = selectedComponents[shortestListIndex].IterationCost;
+            int iterCost = selectedComponentLists[shortestListIndex].IterationCost;
 
-            for (int i = 1; i < selectedComponents.Count; i++)
+            for (int i = 1; i < selectedComponentLists.Count; i++)
             {
-                int thisIterCost = selectedComponents[i].IterationCost;
+                int thisIterCost = selectedComponentLists[i].IterationCost;
                 if (thisIterCost < iterCost)
                 {
                     shortestListIndex = i;

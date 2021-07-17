@@ -21,25 +21,33 @@ namespace ECS
 
     public class ECSWorld
     {
-        private uint nextEntityID = 0;
-        private Queue<uint> freeList = new Queue<uint>();
-        private Dictionary<uint, MutableList<ComponenttypeIndexPair>> entities = new Dictionary<uint, MutableList<ComponenttypeIndexPair>>();
+        private static int nextWorldID = 0;
+
+        private Queue<int> destroyedList = new Queue<int>();
+        private List<bool> isDestroyed = new List<bool>();
+
+        private List<MutableList<ComponenttypeIndexPair>> entityList = new List<MutableList<ComponenttypeIndexPair>>();
+
         private ComponentDatabase componentDatabase;
 
         public int EntityCount {
             get {
-                return entities.Count - freeList.Count;
+                return entityList.Count - destroyedList.Count;
             }
         }
+
+        public readonly int WorldID;
 
         public ECSWorld()
         {
             componentDatabase = new ComponentDatabase();
+            WorldID = nextWorldID;
+            nextWorldID++;
         }
 
-        public uint[] CreateEntities(int number)
+        public int[] CreateEntities(int number)
         {
-            uint[] entities = new uint[number];
+            int[] entities = new int[number];
 
             for(int i = 0; i < number; i++)
             {
@@ -49,28 +57,25 @@ namespace ECS
             return entities;
         }
 
-        public uint CreateEntity()
+
+        public int CreateEntity()
         {
-            if (freeList.Count > 0)
+            if (destroyedList.Count > 0)
             {
-                return freeList.Dequeue();
+                int pooledEntity = destroyedList.Dequeue();
+                isDestroyed[pooledEntity] = false;
+                return pooledEntity;
             }
 
-            uint newEntity = nextNewEntityID();
-            entities[newEntity] = new MutableList<ComponenttypeIndexPair>(10);
+            int newEntity = entityList.Count;
+            entityList.Add(new MutableList<ComponenttypeIndexPair>(3));
+            isDestroyed.Add(false);
 
             return newEntity;
         }
 
-        private uint nextNewEntityID()
-        {
-            uint id = nextEntityID;
-            nextEntityID++;
-            return id;
-        }
 
-
-        public void DestroyEntities(IList<uint> entities)
+        public void DestroyEntities(IList<int> entities)
         {
             for(int i = 0; i < entities.Count; i++)
             {
@@ -78,9 +83,10 @@ namespace ECS
             }
         }
 
-        public void DestroyEntity(uint entityID)
+
+        public void DestroyEntity(int entityID)
         {
-            if (!entities.ContainsKey(entityID))
+            if (entityID >= entityList.Count || entityID < 0)
             {
                 return;
             }
@@ -92,19 +98,21 @@ namespace ECS
                 ComponenttypeIndexPair cip = entityComponents[i];
                 componentDatabase.DestroyComponent(cip.ComponentType, cip.ComponentID);
             }
+
             entityComponents.Clear();
 
-            freeList.Enqueue(entityID);
+            destroyedList.Enqueue(entityID);
+            isDestroyed[entityID] = true;
         }
 
 
-        public void AddComponent<T>(uint entityID, T data) where T : struct
+        public void AddComponent<T>(int entityID, T data) where T : struct
         {
             int typeID = componentDatabase.GetTypeID<T>();
 
             int componentID = componentDatabase.CreateComponent<T>(typeID, entityID, ref data);
 
-            MutableList<ComponenttypeIndexPair> entityComponents = entities[entityID];
+            MutableList<ComponenttypeIndexPair> entityComponents = entityList[entityID];
 
 #if DEBUG
             int i = findComponentOfType(entityComponents, typeID);
@@ -115,10 +123,10 @@ namespace ECS
             entityComponents.Add(new ComponenttypeIndexPair(typeID, componentID));
         }
 
-        public void RemoveComponent<T>(int componentID, uint entityID) where T : struct
+        public void RemoveComponent<T>(int componentID, int entityID) where T : struct
         {
             int typeID = componentDatabase.GetTypeID<T>();
-            MutableList<ComponenttypeIndexPair> components = entities[entityID];
+            MutableList<ComponenttypeIndexPair> components = entityList[entityID];
 
             int pos = findComponentOfType(components, typeID);
 
@@ -171,16 +179,16 @@ namespace ECS
             return componentDatabase.GetComponentList(typeID);
         }
 
-        internal MutableList<ComponenttypeIndexPair> GetAttachedComponents(uint entityID)
+        internal MutableList<ComponenttypeIndexPair> GetAttachedComponents(int entityID)
         {
-            return entities[entityID];
+            return entityList[entityID];
         }
 
 
         /// <summary>
         /// Will throw an exception if this entity does not in fact have a T in it's posession
         /// </summary>
-        public ref T GetComponentFromEntity<T>(uint entityID) where T : struct
+        public ref T GetComponentFromEntity<T>(int entityID) where T : struct
         {
             int typeID = RegisteredComponents.LookupTypeID(typeof(T));
             MutableList<ComponenttypeIndexPair> components = GetAttachedComponents(entityID);
@@ -199,7 +207,7 @@ namespace ECS
             return ref componentDatabase.GetComponentList<T>(typeID)[componentID].Data;
         }
 
-        internal void ComponentIDChanged(uint entityID, int typeID, int newComponentID)
+        internal void ComponentIDChanged(int entityID, int typeID, int newComponentID)
         {
             MutableList<ComponenttypeIndexPair> components = GetAttachedComponents(entityID);
             for(int i = 0; i < components.Count; i++)
@@ -209,7 +217,7 @@ namespace ECS
             }
         }
 
-        public bool HasComponent<T>(uint entityID)
+        public bool HasComponent<T>(int entityID)
         {
             int typeID = RegisteredComponents.LookupTypeID(typeof(T));
             MutableList<ComponenttypeIndexPair> components = GetAttachedComponents(entityID);

@@ -59,7 +59,7 @@ namespace ECS
             return componentDatabase[typeID];
         }
 
-        public int CreateComponent<T>(int typeID, uint entityID, ref T data) where T : struct
+        public int CreateComponent<T>(int typeID, int entityID, ref T data) where T : struct
         {
             ComponentList<T> components = (ComponentList<T>)componentDatabase[typeID];
             return components.CreateComponent(data, entityID);

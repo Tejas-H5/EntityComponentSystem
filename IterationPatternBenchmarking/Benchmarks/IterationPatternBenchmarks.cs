@@ -59,7 +59,7 @@ namespace IterationPatternBenchmarking.Benchmarks
 
         List<IGenericList> componentDoublePointer = new List<IGenericList>();
 
-        Dictionary<uint, MutableList<CompTypeIndexPair>> entityMap = new Dictionary<uint, MutableList<CompTypeIndexPair>>();
+        Dictionary<int, MutableList<CompTypeIndexPair>> entityMap = new Dictionary<int, MutableList<CompTypeIndexPair>>();
 
         int[] selectedComponentIDs = new int[3];
         int[] compIDs = new int[3];
@@ -76,7 +76,7 @@ namespace IterationPatternBenchmarking.Benchmarks
             selectedComponentIDs[1] = RegisteredComponents.LookupTypeID(typeof(Velocity));
             selectedComponentIDs[2] = RegisteredComponents.LookupTypeID(typeof(Position));
 
-            for (uint i = 0; i < NUMELEMENTS; i++)
+            for (int i = 0; i < NUMELEMENTS; i++)
             {
                 MutableList<CompTypeIndexPair> components = new MutableList<CompTypeIndexPair>(3);
                 components.Add(new CompTypeIndexPair(selectedComponentIDs[0], (int)i));
@@ -223,7 +223,7 @@ namespace IterationPatternBenchmarking.Benchmarks
             for (int i = 0; i < NUMELEMENTS; i++)
             {
                 compIDs[shortestComponent] = i;
-                MutableList<CompTypeIndexPair> entityComponents = entityMap[(uint)i];
+                MutableList<CompTypeIndexPair> entityComponents = entityMap[(int)i];
 
                 int found = 1;
 

@@ -7,14 +7,14 @@ namespace ECS
 {
     public interface IComponentList
     {
-        int CreateComponent(uint entityID);
+        int CreateComponent(int entityID);
         void DestroyComponent(int componentID);
 
         // Used to iterate through a component list, as it may not be a tightly packed array
         // (which it isn't in the current implementation)
         public int GetNext(int index);
 
-        public uint GetEntityID(int compID);
+        public int GetEntityID(int compID);
 
         public int TypeID { get; }
         public int IterationCost { get; }
@@ -73,12 +73,12 @@ namespace ECS
         }
 
 
-        public int CreateComponent(uint entityID)
+        public int CreateComponent(int entityID)
         {
             return CreateComponent(default, entityID);
         }
 
-        public int CreateComponent(T data, uint entityID)
+        public int CreateComponent(T data, int entityID)
         {
             if (deletedList.Count > 0)
             {
@@ -129,7 +129,7 @@ namespace ECS
             }
         }
 
-        public uint GetEntityID(int componentID)
+        public int GetEntityID(int componentID)
         {
             return components[componentID].EntityID;
         }

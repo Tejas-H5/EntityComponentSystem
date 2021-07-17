@@ -21,7 +21,7 @@ namespace ECSBenchmarking
 
         MotionIntergratorSystem2D motionIntegrator;
 
-        uint[] entities;
+        int[] entities;
 
         SGObject sceenGraphRoot = new SGObject();
 

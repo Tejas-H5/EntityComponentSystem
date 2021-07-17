@@ -81,7 +81,14 @@ namespace ECS
             var list = new List<string>();
             var queue = new Queue<Assembly>();
 
-            queue.Enqueue(Assembly.GetEntryAssembly());
+            foreach(Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (!list.Contains(asm.FullName))
+                {
+                    queue.Enqueue(asm);
+                    list.Add(asm.FullName);
+                }
+            }
 
             do
             {
@@ -92,15 +99,17 @@ namespace ECS
                 try
                 {
                     foreach (var reference in asm.GetReferencedAssemblies())
+                    {
                         if (!list.Contains(reference.FullName))
                         {
                             queue.Enqueue(Assembly.Load(reference));
                             list.Add(reference.FullName);
                         }
+                    }
                 }
                 catch(Exception e)
                 {
-                    //Do nothing
+                    Console.WriteLine(e);
                 }
             }
             while (queue.Count > 0);

@@ -13,6 +13,18 @@ namespace IterationPatternBenchmarking.Benchmarks
 
     }
 
+    struct CompTypeIndexPair
+    {
+        public int ComponentType;
+        public int ComponentID;
+
+        public CompTypeIndexPair(int componentType, int componentID)
+        {
+            ComponentType = componentType;
+            ComponentID = componentID;
+        }
+    }
+
     class ListObject<T> : IGenericList where T : struct
     {
         private MutableList<Component<T>> list = new MutableList<Component<T>>();
@@ -47,7 +59,10 @@ namespace IterationPatternBenchmarking.Benchmarks
 
         List<IGenericList> componentDoublePointer = new List<IGenericList>();
 
-        int[] componentIDs = new int[3];
+        Dictionary<uint, MutableList<CompTypeIndexPair>> entityMap = new Dictionary<uint, MutableList<CompTypeIndexPair>>();
+
+        int[] selectedComponentIDs = new int[3];
+        int[] compIDs = new int[3];
 
         public IterationPatternBenchmarks()
         {
@@ -56,6 +71,20 @@ namespace IterationPatternBenchmarking.Benchmarks
             InitComponentStructArrays();
 
             InitNestedComponentStructArrays();
+
+            selectedComponentIDs[0] = RegisteredComponents.LookupTypeID(typeof(Acceleration));
+            selectedComponentIDs[1] = RegisteredComponents.LookupTypeID(typeof(Velocity));
+            selectedComponentIDs[2] = RegisteredComponents.LookupTypeID(typeof(Position));
+
+            for (uint i = 0; i < NUMELEMENTS; i++)
+            {
+                MutableList<CompTypeIndexPair> components = new MutableList<CompTypeIndexPair>(3);
+                components.Add(new CompTypeIndexPair(selectedComponentIDs[0], (int)i));
+                components.Add(new CompTypeIndexPair(selectedComponentIDs[1], (int)i));
+                components.Add(new CompTypeIndexPair(selectedComponentIDs[2], (int)i));
+
+                entityMap[i] = components;
+            }
         }
 
         private void InitPureStructArrays()
@@ -168,9 +197,9 @@ namespace IterationPatternBenchmarking.Benchmarks
         {
             for (int i = 0; i < NUMELEMENTS; i++)
             {
-                componentIDs[0] = i;
-                componentIDs[1] = i;
-                componentIDs[2] = i;
+                compIDs[0] = i;
+                compIDs[1] = i;
+                compIDs[2] = i;
 
                 Iterate();
             }
@@ -182,7 +211,49 @@ namespace IterationPatternBenchmarking.Benchmarks
             ListObject<Velocity> velocityList = (ListObject<Velocity>)componentDoublePointer[1];
             ListObject<Position> posList = (ListObject<Position>)componentDoublePointer[2];
 
-            verlet(ref accelList[componentIDs[0]], ref velocityList[componentIDs[1]], ref posList[componentIDs[2]]);
+            verlet(ref accelList[compIDs[0]], ref velocityList[compIDs[1]], ref posList[compIDs[2]]);
         }
+
+
+
+        [Benchmark]
+        public void ECSLikeIteration()
+        {
+            int shortestComponent = 1;
+            for (int i = 0; i < NUMELEMENTS; i++)
+            {
+                compIDs[shortestComponent] = i;
+                MutableList<CompTypeIndexPair> entityComponents = entityMap[(uint)i];
+
+                int found = 1;
+
+                for(int j = 0; j < entityComponents.Count; j++)
+                {
+                    if (entityComponents[j].ComponentType == shortestComponent)
+                        continue;
+
+                    for(int k = 0; k < selectedComponentIDs.Length; k++)
+                    {
+                        if(entityComponents[j].ComponentType == selectedComponentIDs[k])
+                        {
+                            compIDs[k] = entityComponents[j].ComponentID;
+                            found++;
+
+                            if (found == selectedComponentIDs.Length)
+                                break;
+                        }
+                    }
+
+                    if (found == selectedComponentIDs.Length)
+                        break;
+                }
+
+                if(found == selectedComponentIDs.Length)
+                {
+                    Iterate();
+                }
+            }
+        }
+
     }
 }

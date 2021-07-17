@@ -11,7 +11,7 @@ namespace ECS
         void DestroyComponent(int componentID);
 
         // Used to iterate through a component list, as it may not be a tightly packed array
-        // (It used to not be, but now it is though. But in case I change it again, I have kept this function here).
+        // (which it isn't in the current implementation)
         public int GetNext(int index);
 
         public uint GetEntityID(int compID);
@@ -22,17 +22,17 @@ namespace ECS
 
     public class ComponentList<T> : IComponentList where T : struct
     {
+        private Queue<int> deletedList = new Queue<int>();
         private MutableList<Component<T>> components = new MutableList<Component<T>>(10);
-        private int typeID;
-
-        private ComponentDatabase parentDB;
+        private int backOfList = 0;
 
         public int ActiveComponentCount {
             get {
-                return components.Count;
+                return components.Count - deletedList.Count;
             }
         }
 
+        private int typeID;
         public int TypeID {
             get {
                 return typeID;
@@ -41,17 +41,16 @@ namespace ECS
 
         public int IterationCost {
             get {
-                return components.Count;
+                return backOfList;
             }
         }
 
-        public ComponentList(ComponentDatabase parent, int typeID)
+        public ComponentList(int typeID)
         {
             this.typeID = typeID;
-            this.parentDB = parent;
         }
 
-        internal ref Component<T> this[int componentID] {
+        public ref Component<T> this[int componentID] {
             get {
                 return ref components[componentID];
             }
@@ -63,8 +62,13 @@ namespace ECS
         /// </summary>
         public int GetNext(int index)
         {
-            if(index+1 < components.Count)
-                return index + 1;
+            for (int i = index + 1; i <= backOfList; i++)
+            {
+                if (components[i].IsDestroyed)
+                    continue;
+                return i;
+            }
+
             return -1;
         }
 
@@ -76,8 +80,18 @@ namespace ECS
 
         public int CreateComponent(T data, uint entityID)
         {
+            if (deletedList.Count > 0)
+            {
+                int pooledID = deletedList.Dequeue();
+                components[pooledID].IsDestroyed = false;
+                return pooledID;
+            }
+
             int id = components.Count;
             components.Add(new Component<T>(id, entityID, data));
+
+            if (id > backOfList)
+                backOfList = id;
 
             return id;
         }
@@ -102,10 +116,17 @@ namespace ECS
 
         public void DestroyComponent(int ID)
         {
-            components.Swap(ID, components.Count - 1);
-            components.RemoveAt(components.Count - 1);
+            components[ID].EntityID = ECSConstants.InvalidEntityID;
+            components[ID].IsDestroyed = true;
+            deletedList.Enqueue(ID);
 
-            parentDB.ComponentIDChanged(components[ID].EntityID, typeID, ID);
+            if (ID == backOfList)
+            {
+                while (backOfList > 0 && components[backOfList].IsDestroyed)
+                {
+                    backOfList--;
+                }
+            }
         }
 
         public uint GetEntityID(int componentID)

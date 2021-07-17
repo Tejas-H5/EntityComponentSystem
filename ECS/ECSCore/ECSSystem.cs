@@ -10,10 +10,10 @@ namespace ECS
     //Can't call this System because of the C# System namespace.
     public abstract class ECSSystem
     {
-        private MutableList<IComponentList> selectedComponents = new MutableList<IComponentList>();
-        private int[] selectedComponentTypeIDs;
-        private int[] componentIDs;
-        private ECSWorld world;
+        protected List<IComponentList> selectedComponents = new List<IComponentList>();
+        protected int[] selectedComponentTypeIDs;
+        protected int[] componentIDs;
+        protected ECSWorld world;
 
         public ECSSystem(ECSWorld world)
         {
@@ -92,7 +92,6 @@ namespace ECS
         private void updateSingleComponent(float deltaTime)
         {
             IComponentList onlyList = selectedComponents[0];
-            int traversalComponentTypeID = onlyList.TypeID;
             int traversalComponentID = -1;
             while ((traversalComponentID = onlyList.GetNext(traversalComponentID)) != -1)
             {
@@ -126,6 +125,10 @@ namespace ECS
             }
         }
 
+        /// <summary>
+        /// Use the GetComponent function here to get the components you selected in the Init function
+        /// </summary>
+        protected abstract void Iterate(float deltaTime);
 
         private bool findOtherSelectedComponents(int traversalComponentTypeID, MutableList<ComponenttypeIndexPair> entityComponents)
         {
@@ -180,11 +183,5 @@ namespace ECS
         /// This function must call SelectComonentTypes.
         /// </summary>
         protected abstract void InitSystem();
-
-
-        /// <summary>
-        /// Use the GetComponent
-        /// </summary>
-        protected abstract void Iterate(float deltaTime);
     }
 }

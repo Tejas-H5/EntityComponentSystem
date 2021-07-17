@@ -34,7 +34,7 @@ namespace ECS
 
         public ECSWorld()
         {
-            componentDatabase = new ComponentDatabase(this);
+            componentDatabase = new ComponentDatabase();
         }
 
         public uint[] CreateEntities(int number)

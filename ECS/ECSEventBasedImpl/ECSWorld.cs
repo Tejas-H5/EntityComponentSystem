@@ -1,11 +1,11 @@
 ﻿using ECS.CustomDataStructures;
-using ECS;
+using ECS.EventBasedImplementation;
 using ECS.Components;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ECS
+namespace ECS.EventBasedImplementation
 {
     internal struct ComponenttypeIndexPair
     {

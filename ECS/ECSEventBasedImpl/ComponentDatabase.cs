@@ -1,10 +1,10 @@
-﻿using ECS;
+﻿using ECS.EventBasedImplementation;
 using ECS.Components;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ECS
+namespace ECS.EventBasedImplementation
 {
     // This class is merely a subsection of the World class, so many functions will take in a typeID,
     // even though it may seem redundant due to the function GetTypeID<T>();

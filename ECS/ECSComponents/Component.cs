@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace ECS
+namespace ECS.Components
 {
     /// <summary>
     /// This struct is an ECS internal data structure that you probably don't need to use.

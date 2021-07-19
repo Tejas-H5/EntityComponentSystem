@@ -1,11 +1,11 @@
 ﻿using ECS.CustomDataStructures;
-using ECS;
+using ECS.EventBasedImplementation;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ECS
+namespace ECS.EventBasedImplementation
 {
     //Can't call this System because of the C# System namespace.
     public abstract class ECSSystem

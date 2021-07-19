@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace ECS
+namespace ECS.Components
 {
     internal struct ECSComponentattributeTypePair : IComparable<ECSComponentattributeTypePair>
     {

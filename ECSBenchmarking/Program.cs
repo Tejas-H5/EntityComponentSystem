@@ -11,7 +11,7 @@ namespace ECSBenchmarking
             //Use this line to quickly turn on Debug mode for BenchmarkDotNet
             //BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, new DebugInProcessConfig());
 
-            BenchmarkRunner.Run<ECSvsOthersBenchmarks>();
+            BenchmarkRunner.Run<ECSAllImplCombinedBenchmark>();
         }
     }
 }

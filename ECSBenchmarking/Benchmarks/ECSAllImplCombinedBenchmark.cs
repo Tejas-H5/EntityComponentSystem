@@ -13,18 +13,20 @@ namespace ECSBenchmarking
         [Params(10000)]
         public int NumElements { get; set; }
 
-        ECSEventBasedBenchmark eventBased = new ECSEventBasedBenchmark();
+        //ECSEventBasedBenchmark eventBased = new ECSEventBasedBenchmark();
         ECSNormalBenchmark normal = new ECSNormalBenchmark();
 
         [GlobalSetup]
         public void GlobalSetup()
         {
             //Order is important
-            eventBased.NumberOfElements = NumElements;
-            eventBased.GlobalSetup();
-
             normal.NumberOfElements = NumElements;
             normal.GlobalSetup();
+
+            /*
+            eventBased.NumberOfElements = NumElements;
+            eventBased.GlobalSetup();
+            */
         }
 
 
@@ -34,11 +36,12 @@ namespace ECSBenchmarking
             normal.ECSUpdate();
         }
 
-
+        /*
         [Benchmark]
         public void EventBasedECSUpdate()
         {
             eventBased.EventBasedECSUpdate();
         }
+        */
     }
 }

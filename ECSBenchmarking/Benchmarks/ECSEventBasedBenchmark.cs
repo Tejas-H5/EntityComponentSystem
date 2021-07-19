@@ -1,12 +1,11 @@
 ﻿using BenchmarkDotNet.Attributes;
-using ECS.EventBasedImplementation;
 using ECS.CustomDataStructures;
 using ECSBenchmarking.SceneGraph;
 using Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
-
+/*
 namespace ECSBenchmarking
 {
     [MemoryDiagnoser]
@@ -51,3 +50,4 @@ namespace ECSBenchmarking
         }
     }
 }
+*/

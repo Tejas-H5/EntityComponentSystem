@@ -1,6 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using Common;
-using ECS;
+using ECS.Components;
 using ECS.CustomDataStructures;
 using System;
 using System.Collections.Generic;

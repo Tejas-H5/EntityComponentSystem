@@ -101,39 +101,6 @@ namespace Common
         }
     }
 
-    public class MotionIntergratorSystem2DEventBased : ECS.EventBasedImplementation.ECSSystem
-    {
-        public MotionIntergratorSystem2DEventBased(ECS.EventBasedImplementation.ECSWorld world) : base(world) { }
-
-        protected override void InitSystem()
-        {
-            SelectComponentTypes(
-                typeof(Velocity),
-                typeof(Position),
-                typeof(Acceleration)
-            );
-        }
-
-        protected override void Iterate(float deltaTime)
-        {
-            ref Velocity vel = ref GetComponent<Velocity>(0);
-            ref Position pos = ref GetComponent<Position>(1);
-            ref Acceleration accel = ref GetComponent<Acceleration>(2);
-
-            float halfDelta = 0.5f * deltaTime;
-
-            //Verlet intergration
-            pos.X += vel.X * halfDelta;
-            pos.Y += vel.Y * halfDelta;
-
-            vel.X += accel.X * deltaTime;
-            vel.Y += accel.Y * deltaTime;
-
-            pos.X += vel.X * halfDelta;
-            pos.Y += vel.Y * halfDelta;
-        }
-    }
-
     public class HardcodedMotionIntergratorSystem2D
     {
         MutableList<Velocity> velocities;

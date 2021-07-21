@@ -6,11 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimplestECSUnitTests.ECS
+namespace ECSUnitTests.ECS
 {
     [TestClass]
-    public class ECSTests
+    public abstract class ECSTests
     {
+        protected abstract IECSSystem CreateSystem(ECSWorld world);
+
         [TestMethod]
         public void ECS_WorldCreation_ShouldntThrowExceptions()
         {
@@ -62,7 +64,7 @@ namespace SimplestECSUnitTests.ECS
         {
             ECSWorld world = new ECSWorld();
 
-            MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
+            IECSSystem motionIntegrator = CreateSystem(world);
 
             int entity = world.CreateEntity();
             world.AddComponent(entity, new Position(0, 0));
@@ -86,7 +88,7 @@ namespace SimplestECSUnitTests.ECS
         {
             ECSWorld world = new ECSWorld();
 
-            MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
+            IECSSystem motionIntegrator = CreateSystem(world);
 
             List<int> entities = createSeveralEntities(world, 100000);
             addPositionAccelerationVelocityComponents(world, entities);
@@ -118,7 +120,7 @@ namespace SimplestECSUnitTests.ECS
         {
             ECSWorld world = new ECSWorld();
 
-            MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
+            IECSSystem motionIntegrator = CreateSystem(world);
 
             List<int> entities = createSeveralEntities(world, 1000000);
 
@@ -137,7 +139,7 @@ namespace SimplestECSUnitTests.ECS
             }
 
 
-            int startTime = DateTime.Now.Millisecond;
+            DateTime startTime = DateTime.Now;
 
             float framerate = 1f / 60f;
             for (float t = 0; t < 10f; t += framerate)
@@ -145,9 +147,9 @@ namespace SimplestECSUnitTests.ECS
                 motionIntegrator.Update(framerate);
             }
 
-            int timeTaken = DateTime.Now.Millisecond - startTime;
+            double timeTaken = (DateTime.Now - startTime).TotalMilliseconds;
 
-            Assert.IsTrue(timeTaken < 300);
+            Assert.IsTrue(timeTaken < 10);
 
             assertPos_XIsAt(world, subset, 10, 1);
         }
@@ -179,11 +181,11 @@ namespace SimplestECSUnitTests.ECS
             testThatECSCanCreateNEntities(1000000);
         }
 
-        private static void testThatECSCanCreateNEntities(int n)
+        private void testThatECSCanCreateNEntities(int n)
         {
             ECSWorld world = new ECSWorld();
 
-            MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
+            IECSSystem motionIntegrator = CreateSystem(world);
 
             List<int> entities = createSeveralEntities(world, n);
             addPositionAccelerationVelocityComponents(world, entities);
@@ -197,7 +199,7 @@ namespace SimplestECSUnitTests.ECS
         {
             ECSWorld world = new ECSWorld();
 
-            MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
+            IECSSystem motionIntegrator = CreateSystem(world);
 
             List<int> entities = createSeveralEntities(world, 10);
             addPositionAccelerationVelocityComponents(world, entities);
@@ -221,7 +223,7 @@ namespace SimplestECSUnitTests.ECS
         {
             ECSWorld world = new ECSWorld();
 
-            MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
+            IECSSystem motionIntegrator = CreateSystem(world);
 
             List<int> entities = createSeveralEntities(world, 10);
             addPositionAccelerationVelocityComponents(world, entities);
@@ -246,7 +248,7 @@ namespace SimplestECSUnitTests.ECS
         {
             ECSWorld world = new ECSWorld();
 
-            MotionIntergratorSystem2D motionIntegrator = new MotionIntergratorSystem2D(world);
+            IECSSystem motionIntegrator = CreateSystem(world);
 
             List<int> entities = createSeveralEntities(world, 10);
             addPositionAccelerationVelocityComponents(world, entities);

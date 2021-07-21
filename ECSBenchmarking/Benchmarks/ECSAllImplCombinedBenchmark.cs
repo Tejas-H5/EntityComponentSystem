@@ -23,8 +23,8 @@ namespace ECSBenchmarking
             normal.NumberOfElements = NumElements;
             normal.GlobalSetup();
 
-            reactive.NumberOfElements = NumElements;
-            reactive.GlobalSetup();
+            //reactive.NumberOfElements = NumElements;
+            //reactive.GlobalSetup();
         }
 
 
@@ -34,10 +34,10 @@ namespace ECSBenchmarking
             normal.ECSUpdate();
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void EventBasedECSUpdate()
         {
-            reactive.EventBasedECSUpdate();
+            //reactive.EventBasedECSUpdate();
         }
     }
 }

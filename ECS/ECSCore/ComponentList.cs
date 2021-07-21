@@ -27,6 +27,8 @@ namespace ECS
     {
         private Queue<int> deletedList = new Queue<int>();
 
+        //Note to future dev(s): Replacing Component<T> with <T> and using a Struct of Arrays approach
+        //does not improve benchmarks and makes readability worse, so don't do it
         private MutableList<Component<T>> components = new MutableList<Component<T>>(10);
         private int backOfList = 0;
 

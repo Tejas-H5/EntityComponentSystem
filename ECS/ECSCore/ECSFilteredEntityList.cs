@@ -7,7 +7,6 @@ namespace ECS
     public class ECSFilteredEntityList : ECSRelevantComponentListner
     {
         MultiList<int> componentIDLists;
-        List<int> entityIDs = new List<int>();
         Dictionary<int, int> entityIndexMap = new Dictionary<int, int>();
 
         public int NumEntities {
@@ -27,11 +26,11 @@ namespace ECS
 
         public override void OnAddRelevantEntity(int[] componentIDs, int entityID)
         {
+            //order matters
             int index = NumEntities;
 
             componentIDLists.Add(componentIDs);
 
-            entityIDs.Add(entityID);
             entityIndexMap[entityID] = index;
         }
 

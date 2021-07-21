@@ -1,6 +1,9 @@
-﻿namespace ECS
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+
+namespace ECS
 {
-    public struct CompTypeIDPair
+    public struct CompTypeIDPair : IComparable<CompTypeIDPair>
     {
         public int ComponentType;
         public int ComponentID;
@@ -9,6 +12,11 @@
         {
             ComponentType = componentType;
             ComponentID = componentID;
+        }
+
+        public int CompareTo(CompTypeIDPair other)
+        {
+            return ComponentType.CompareTo(other.ComponentType);
         }
     }
 }

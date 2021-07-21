@@ -123,7 +123,9 @@ namespace ECS
                 throw new Exception("This component already exists on this type");
 #endif
             int indexIntoComponentList = entityComponents.Count;
+
             entityComponents.Add(new CompTypeIDPair(typeID, componentID));
+            entityComponents.Sort();
 
             if (sendEvent)
             {

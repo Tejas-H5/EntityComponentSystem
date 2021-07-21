@@ -11,7 +11,7 @@ namespace ECSProfiling
         {
             ECSWorld world = new ECSWorld();
 
-            ECSReactiveSystem motionIntegrator = new MotionIntergratorSystem2DReactive(world);
+            ECSSystem motionIntegrator = new MotionIntergratorSystem2D(world);
 
             List<int> entities = createSeveralEntities(world, 100000);
 

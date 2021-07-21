@@ -8,7 +8,7 @@ namespace ECS
 {
     public abstract class ECSRelevantComponentListner : IECSListner
     {
-        protected int[] foundComponentIDs;
+        protected readonly int[] foundComponentIDs;
 
         protected ECSWorld world;
         protected ComponentSelection componentSelection;

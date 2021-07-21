@@ -13,8 +13,8 @@ namespace ECS
         private readonly List<IComponentList> selectedComponentLists = new List<IComponentList>();
         private readonly int[] foundComponentIDs;
 
-        readonly private ECSWorld world;
-        readonly private ComponentSelection componentSelection;
+        private readonly ECSWorld world;
+        private readonly ComponentSelection componentSelection;
 
         /// <summary>
         /// Mainly used in the Iterate() function to get the selected components.

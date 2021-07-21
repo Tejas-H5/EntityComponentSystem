@@ -156,5 +156,10 @@ namespace ECS.CustomDataStructures
         {
             resizeBackingArray(_length);
         }
+
+        public void Sort()
+        {
+            Array.Sort(_backingArray, 0, _length);
+        }
     }
 }

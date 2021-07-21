@@ -12,7 +12,8 @@ namespace ECS
     {
         protected List<IComponentList> selectedComponentLists = new List<IComponentList>();
         protected int[] selectedComponentTypeIDs;
-        protected int[] componentIDs;
+
+        private int[] foundComponentIDs;
         private ECSWorld world;
 
         public ECSSystem(ECSWorld world)
@@ -41,7 +42,7 @@ namespace ECS
         protected ref T GetComponent<T>(int initializationOrder) where T : struct
         {
             ComponentList<T> components = StaticComponentListCache<T>.Get(world.WorldID);
-            int componentID = componentIDs[initializationOrder];
+            int componentID = foundComponentIDs[initializationOrder];
             return ref components[componentID].Data;
         }
 
@@ -66,15 +67,21 @@ namespace ECS
         protected void SelectComponentTypes(params Type[] types)
         {
             selectedComponentTypeIDs = new int[types.Length];
-            componentIDs = new int[types.Length];
+            foundComponentIDs = new int[types.Length];
+            selectedComponentLists.Capacity = types.Length;
 
             for (int i = 0; i < types.Length; i++)
             {
-                int typeID = world.GetTypeID(types[i]);
-
-                selectedComponentLists.Add(world.GetComponentList(typeID));
-                selectedComponentTypeIDs[i] = typeID;
+                selectComponentType(types, i);
             }
+        }
+
+        private void selectComponentType(Type[] types, int i)
+        {
+            int typeID = world.GetTypeID(types[i]);
+
+            selectedComponentLists.Add(world.GetComponentList(typeID));
+            selectedComponentTypeIDs[i] = typeID;
         }
 
         public void Update(float deltaTime)
@@ -96,7 +103,7 @@ namespace ECS
 
             while ((traversalComponentID = onlyList.GetNext(traversalComponentID)) != -1)
             {
-                componentIDs[0] = traversalComponentID;
+                foundComponentIDs[0] = traversalComponentID;
                 Iterate(deltaTime);
             }
         }
@@ -111,24 +118,16 @@ namespace ECS
             while ((traversalComponentID = shortestList.GetNext(traversalComponentID)) != -1)
             {
                 int entityID = shortestList.GetEntityID(traversalComponentID);
-                MutableList<ComponenttypeIndexPair> entityComponents = world.GetAttachedComponents(entityID);
-
-                if (entityComponents.Count < selectedComponentLists.Count)
-                    continue;
-
-                componentIDs[shortestListIndex] = traversalComponentID;
+                MutableList<CompTypeIDPair> entityComponents = world.GetAttachedComponents(entityID);
 
                 if (!findOtherSelectedComponents(traversalComponentTypeID, entityComponents))
                     continue;
 
+                foundComponentIDs[shortestListIndex] = traversalComponentID;
+
                 Iterate(deltaTime);
             }
         }
-
-        /// <summary>
-        /// Use the GetComponent function here to get the components you selected in the Init function
-        /// </summary>
-        protected abstract void Iterate(float deltaTime);
 
         private int getShortestListIndex()
         {
@@ -148,8 +147,11 @@ namespace ECS
             return shortestListIndex;
         }
 
-        private bool findOtherSelectedComponents(int traversalComponentTypeID, MutableList<ComponenttypeIndexPair> entityComponents)
+        private bool findOtherSelectedComponents(int traversalComponentTypeID, MutableList<CompTypeIDPair> entityComponents)
         {
+            if (entityComponents.Count < selectedComponentLists.Count)
+                return false;
+
             for (int j = 0; j < selectedComponentTypeIDs.Length; j++)
             {
                 if (j == traversalComponentTypeID)
@@ -160,7 +162,7 @@ namespace ECS
 
                 for(int k = 0; k < entityComponents.Count; k++)
                 {
-                    ref ComponenttypeIndexPair compIndexPair = ref entityComponents[k];
+                    ref CompTypeIDPair compIndexPair = ref entityComponents[k];
                     if (compIndexPair.ComponentType == thisComponentType)
                     {
                         thisComponentID = compIndexPair.ComponentID;
@@ -172,7 +174,7 @@ namespace ECS
                 if (aSingleComponentWasntFound)
                     return false;
 
-                componentIDs[j] = thisComponentID;
+                foundComponentIDs[j] = thisComponentID;
             }
 
             return true;
@@ -183,5 +185,10 @@ namespace ECS
         /// This function must call SelectComonentTypes.
         /// </summary>
         protected abstract void InitSystem();
+
+        /// <summary>
+        /// Use the GetComponent function here to get the components you selected in the Init function
+        /// </summary>
+        protected abstract void Iterate(float deltaTime);
     }
 }

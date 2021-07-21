@@ -26,6 +26,7 @@ namespace ECS
     public class ComponentList<T> : IComponentList where T : struct
     {
         private Queue<int> deletedList = new Queue<int>();
+
         private MutableList<Component<T>> components = new MutableList<Component<T>>(10);
         private int backOfList = 0;
 

@@ -5,13 +5,14 @@ using Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
-/*
+using ECS;
+
 namespace ECSBenchmarking
 {
     [MemoryDiagnoser]
     [Orderer(BenchmarkDotNet.Order.SummaryOrderPolicy.FastestToSlowest)]
     [RankColumn]
-    public class ECSEventBasedBenchmark
+    public class ECSReactiveBenchmark
     {
         [Params(10000)]
         public int NumberOfElements { get; set; }
@@ -20,7 +21,7 @@ namespace ECSBenchmarking
 
         ECSWorld world = new ECSWorld();
 
-        MotionIntergratorSystem2DEventBased motionIntegrator;
+        MotionIntergratorSystem2DReactive motionIntegrator;
 
         int[] entities;
 
@@ -32,7 +33,7 @@ namespace ECSBenchmarking
 
         private void InitECS()
         {
-            motionIntegrator = new MotionIntergratorSystem2DEventBased(world);
+            motionIntegrator = new MotionIntergratorSystem2DReactive(world);
             entities = world.CreateEntities(NumberOfElements);
 
             for (int i = 0; i < entities.Length; i++)
@@ -50,4 +51,3 @@ namespace ECSBenchmarking
         }
     }
 }
-*/

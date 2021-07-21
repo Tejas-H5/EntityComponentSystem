@@ -7,19 +7,6 @@ using System.Text;
 
 namespace ECS
 {
-    internal struct ComponenttypeIndexPair
-    {
-        public int ComponentType;
-        public int ComponentID;
-
-        public ComponenttypeIndexPair(int componentType, int componentID)
-        {
-            ComponentType = componentType;
-            ComponentID = componentID;
-        }
-    }
-
-
     public class ECSWorld
     {
         private static int nextWorldID = 0;
@@ -27,9 +14,11 @@ namespace ECS
         private Queue<int> destroyedList = new Queue<int>();
         private List<bool> isDestroyed = new List<bool>();
 
-        private List<MutableList<ComponenttypeIndexPair>> entityList = new List<MutableList<ComponenttypeIndexPair>>();
+        private List<MutableList<CompTypeIDPair>> entityList = new List<MutableList<CompTypeIDPair>>();
 
         private ComponentDatabase componentDatabase;
+
+        private List<IECSListner> subscribedListeners = new List<IECSListner>();
 
         public int EntityCount {
             get {
@@ -71,8 +60,13 @@ namespace ECS
             }
 
             int newEntity = entityList.Count;
-            entityList.Add(new MutableList<ComponenttypeIndexPair>(3));
+            entityList.Add(new MutableList<CompTypeIDPair>(3));
             isDestroyed.Add(false);
+
+            for (int i = 0; i < subscribedListeners.Count; i++)
+            {
+                subscribedListeners[i].OnAddEntity(entityList[newEntity], newEntity);
+            }
 
             return newEntity;
         }
@@ -94,11 +88,18 @@ namespace ECS
                 return;
             }
 
-            MutableList<ComponenttypeIndexPair> entityComponents = GetAttachedComponents(entityID);
+            MutableList<CompTypeIDPair> entityComponents = GetAttachedComponents(entityID);
+
+
+            for (int i = 0; i < subscribedListeners.Count; i++)
+            {
+                subscribedListeners[i].OnAddEntity(entityComponents, entityID);
+            }
+
 
             for (int i = 0; i < entityComponents.Count; i++)
             {
-                ComponenttypeIndexPair cip = entityComponents[i];
+                CompTypeIDPair cip = entityComponents[i];
                 componentDatabase.DestroyComponent(cip.ComponentType, cip.ComponentID);
             }
 
@@ -115,35 +116,45 @@ namespace ECS
 
             int componentID = componentDatabase.CreateComponent<T>(typeID, entityID, ref data);
 
-            MutableList<ComponenttypeIndexPair> entityComponents = entityList[entityID];
+            MutableList<CompTypeIDPair> entityComponents = entityList[entityID];
 
 #if DEBUG
             int i = findComponentOfType(entityComponents, typeID);
             if (i != -1)
                 throw new Exception("This component already exists on this type");
 #endif
+            int indexIntoComponentList = entityComponents.Count;
+            entityComponents.Add(new CompTypeIDPair(typeID, componentID));
 
-            entityComponents.Add(new ComponenttypeIndexPair(typeID, componentID));
+            for(int i = 0; i < subscribedListeners.Count; i++)
+            {
+                subscribedListeners[i].OnAddComponent(entityComponents, entityID, indexIntoComponentList);
+            }
         }
 
         public void RemoveComponent<T>(int componentID, int entityID) where T : struct
         {
             int typeID = componentDatabase.GetTypeID<T>();
-            MutableList<ComponenttypeIndexPair> components = entityList[entityID];
+            MutableList<CompTypeIDPair> components = entityList[entityID];
 
-            int pos = findComponentOfType(components, typeID);
+            int indexIntoComponents = findComponentOfType(components, typeID);
 
-            if (pos == -1)
+            if (indexIntoComponents == -1)
             {
                 throw new TypeAccessException("The entity " + entityID + " does not have a component of type " + typeof(T));
             }
 
-            swapToBackAndRemove(components, pos);
+            for (int i = 0; i < subscribedListeners.Count; i++)
+            {
+                subscribedListeners[i].OnRemoveComponent(components, entityID, indexIntoComponents);
+            }
+
+            swapToBackAndRemove(components, indexIntoComponents);
 
             componentDatabase.DestroyComponent(typeID, componentID);
         }
 
-        private int findComponentOfType(MutableList<ComponenttypeIndexPair> components, int typeID)
+        private int findComponentOfType(MutableList<CompTypeIDPair> components, int typeID)
         {
             for (int i = 0; i < components.Count; i++)
             {
@@ -156,7 +167,7 @@ namespace ECS
             return -1;
         }
 
-        private static void swapToBackAndRemove(MutableList<ComponenttypeIndexPair> components, int pos)
+        private static void swapToBackAndRemove(MutableList<CompTypeIDPair> components, int pos)
         {
             components.Swap(pos, components.Count - 1);
             components.RemoveAt(components.Count - 1);
@@ -182,7 +193,7 @@ namespace ECS
             return componentDatabase.GetComponentList(typeID);
         }
 
-        internal MutableList<ComponenttypeIndexPair> GetAttachedComponents(int entityID)
+        internal MutableList<CompTypeIDPair> GetAttachedComponents(int entityID)
         {
 #if DEBUG
             if (entityID < 0 || entityID >= entityList.Count)
@@ -201,7 +212,7 @@ namespace ECS
         public ref T GetComponentFromEntity<T>(int entityID) where T : struct
         {
             int typeID = RegisteredComponents.LookupTypeID(typeof(T));
-            MutableList<ComponenttypeIndexPair> components = GetAttachedComponents(entityID);
+            MutableList<CompTypeIDPair> components = GetAttachedComponents(entityID);
 
             int componentID = -1;
 
@@ -219,7 +230,7 @@ namespace ECS
 
         internal void ComponentIDChanged(int entityID, int typeID, int newComponentID)
         {
-            MutableList<ComponenttypeIndexPair> components = GetAttachedComponents(entityID);
+            MutableList<CompTypeIDPair> components = GetAttachedComponents(entityID);
             for(int i = 0; i < components.Count; i++)
             {
                 if (components[i].ComponentType == typeID)
@@ -230,7 +241,7 @@ namespace ECS
         public bool HasComponent<T>(int entityID)
         {
             int typeID = RegisteredComponents.LookupTypeID(typeof(T));
-            MutableList<ComponenttypeIndexPair> components = GetAttachedComponents(entityID);
+            MutableList<CompTypeIDPair> components = GetAttachedComponents(entityID);
             for (int i = 0; i < components.Count; i++)
             {
                 if (components[i].ComponentType == typeID)
@@ -238,6 +249,16 @@ namespace ECS
             }
 
             return false;
+        }
+
+        public void SubscribeListener(IECSListner listener)
+        {
+            subscribedListeners.Add(listener);
+        }
+
+        public void UnsubscribeListener(IECSListner listener)
+        {
+            subscribedListeners.Remove(listener);
         }
     }
 }

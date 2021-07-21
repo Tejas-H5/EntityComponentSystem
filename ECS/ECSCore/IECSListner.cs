@@ -7,8 +7,8 @@ namespace ECS
 {
     public interface IECSListner
     {
-        void OnAddEntity(MutableList<CompTypeIDPair> components, int entityID);
-        void OnRemoveEntity(MutableList<CompTypeIDPair> components, int entityID);
+        void OnEntityCreated(MutableList<CompTypeIDPair> components, int entityID);
+        void OnEntityRemoved(MutableList<CompTypeIDPair> components, int entityID);
         void OnAddComponent(MutableList<CompTypeIDPair> components, int entityID, int indexIntoComponentsList);
         void OnRemoveComponent(MutableList<CompTypeIDPair> components, int entityID, int indexIntoComponentsList);
     }

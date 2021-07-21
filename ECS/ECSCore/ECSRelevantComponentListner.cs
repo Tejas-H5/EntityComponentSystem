@@ -37,7 +37,7 @@ namespace ECS
         }
 
 
-        public void OnAddEntity(MutableList<CompTypeIDPair> components, int entityID)
+        public void OnEntityCreated(MutableList<CompTypeIDPair> components, int entityID)
         {
             addEntityIfItHasSelectedComponents(components, entityID);
         }
@@ -74,7 +74,7 @@ namespace ECS
             return true;
         }
 
-        public void OnRemoveEntity(MutableList<CompTypeIDPair> components, int entityID)
+        public void OnEntityRemoved(MutableList<CompTypeIDPair> components, int entityID)
         {
             removeEntityIfItHadSelectedComponents(components, entityID);
         }
@@ -89,7 +89,29 @@ namespace ECS
 
         public void OnAddComponent(MutableList<CompTypeIDPair> components, int entityID, int indexIntoComponentsList)
         {
-            addEntityIfItHasSelectedComponents(components, entityID);
+            int addedComponentTypeID = components[indexIntoComponentsList].ComponentType;
+            int index = selectedComponentIndex(addedComponentTypeID);
+
+            bool addedComponentIsASelectedComponent = index == -1;
+            if (addedComponentIsASelectedComponent)
+                return;
+
+            if (!findSelectedTypes(components))
+                return;
+
+            OnAddRelevantEntity(foundComponentIDs, entityID);
+        }
+
+        private int selectedComponentIndex(int type)
+        {
+            for (int i = 0; i < selectedComponentTypeIDs.Length; i++)
+            {
+                if (selectedComponentTypeIDs[i] == type)
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
 
         public void OnRemoveComponent(MutableList<CompTypeIDPair> components, int entityID, int indexIntoComponentsList)

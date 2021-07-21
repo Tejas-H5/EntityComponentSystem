@@ -66,7 +66,7 @@ namespace ECS
             return components.CreateComponent(data, entityID);
         }
 
-        public void DestroyComponent(int typeID, int componentID)
+        public void RemoveComponent(int typeID, int componentID)
         {
             IComponentList components = componentDatabase[typeID];
             components.DestroyComponent(componentID);

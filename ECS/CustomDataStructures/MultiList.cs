@@ -30,12 +30,17 @@ namespace ECS.CustomDataStructures
 
         public T this[int index, int listNumber] {
             get {
-                return base[index * _listCount + listNumber];
+                return base[(index * _listCount) + listNumber];
             }
         }
 
         public void Add(T[] items)
         {
+#if DEBUG
+            if (items.Length != _listCount)
+                throw new Exception("This array's length is not the same as the list count");
+#endif
+
             for(int i = 0; i < items.Length; i++)
             {
                 base.Add(items[i]);

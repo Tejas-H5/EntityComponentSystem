@@ -45,7 +45,7 @@ namespace ECSBenchmarking
         }
 
         [Benchmark]
-        public void EventBasedECSUpdate()
+        public void ECSUpdate()
         {
             motionIntegrator.Update(FRAMERATE);
         }

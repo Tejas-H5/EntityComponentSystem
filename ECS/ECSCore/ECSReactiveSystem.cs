@@ -13,12 +13,13 @@ namespace ECS
         Dictionary<int, int> entityIndexMap = new Dictionary<int, int>();
         
         private int NumEntities {
-            get { return componentIDLists.Count; }
+            get { return componentIDLists.Length; }
         }
 
         public ECSReactiveSystem(ECSWorld world) : base(world)
         {
-
+            world.SubscribeListener(this);
+            InitSystem();
         }
 
         protected override void OnAfterComponentTypesHaveBeenSelected()
@@ -38,11 +39,13 @@ namespace ECS
 
         public override void OnRemoveRelevantEntity(int entityID)
         {
-            int index = entityID;
+            int index = entityIndexMap[entityID];
             int back = NumEntities - 1;
 
             componentIDLists.Swap(index, back);
             componentIDLists.RemoveAt(back);
+
+            entityIndexMap.Remove(entityID);
         }
 
         public void Update(float deltaTime)

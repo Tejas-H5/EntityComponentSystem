@@ -7,7 +7,7 @@ using System.Text;
 
 namespace ECS
 {
-    public class ECSWorld
+    public partial class ECSWorld
     {
         private static int nextWorldID = 0;
 
@@ -63,11 +63,6 @@ namespace ECS
             entityList.Add(new MutableList<CompTypeIDPair>(3));
             isDestroyed.Add(false);
 
-            for (int i = 0; i < subscribedListeners.Count; i++)
-            {
-                subscribedListeners[i].OnAddEntity(entityList[newEntity], newEntity);
-            }
-
             return newEntity;
         }
 
@@ -90,17 +85,12 @@ namespace ECS
 
             MutableList<CompTypeIDPair> entityComponents = GetAttachedComponents(entityID);
 
-
-            for (int i = 0; i < subscribedListeners.Count; i++)
-            {
-                subscribedListeners[i].OnAddEntity(entityComponents, entityID);
-            }
-
+            invokeEntityDestroyedEvent(entityID, entityComponents);
 
             for (int i = 0; i < entityComponents.Count; i++)
             {
                 CompTypeIDPair cip = entityComponents[i];
-                componentDatabase.DestroyComponent(cip.ComponentType, cip.ComponentID);
+                componentDatabase.RemoveComponent(cip.ComponentType, cip.ComponentID);
             }
 
             entityComponents.Clear();
@@ -109,8 +99,17 @@ namespace ECS
             isDestroyed[entityID] = true;
         }
 
-
         public void AddComponent<T>(int entityID, T data) where T : struct
+        {
+            addComponent(entityID, data, true);
+        }
+
+        private void addComponentNoEvent<T>(int entityID, T data) where T : struct
+        {
+            addComponent(entityID, data, false);
+        }
+
+        private void addComponent<T>(int entityID, T data, bool sendEvent) where T : struct
         {
             int typeID = componentDatabase.GetTypeID<T>();
 
@@ -126,9 +125,9 @@ namespace ECS
             int indexIntoComponentList = entityComponents.Count;
             entityComponents.Add(new CompTypeIDPair(typeID, componentID));
 
-            for(int i = 0; i < subscribedListeners.Count; i++)
+            if (sendEvent)
             {
-                subscribedListeners[i].OnAddComponent(entityComponents, entityID, indexIntoComponentList);
+                invokeComponentAddedEvent(entityID, entityComponents, indexIntoComponentList);
             }
         }
 
@@ -144,14 +143,12 @@ namespace ECS
                 throw new TypeAccessException("The entity " + entityID + " does not have a component of type " + typeof(T));
             }
 
-            for (int i = 0; i < subscribedListeners.Count; i++)
-            {
-                subscribedListeners[i].OnRemoveComponent(components, entityID, indexIntoComponents);
-            }
+            invokeComponentRemovedEvent(entityID, components, indexIntoComponents);
 
-            swapToBackAndRemove(components, indexIntoComponents);
+            components.Swap(indexIntoComponents, components.Count - 1);
+            components.RemoveAt(components.Count - 1);
 
-            componentDatabase.DestroyComponent(typeID, componentID);
+            componentDatabase.RemoveComponent(typeID, componentID);
         }
 
         private int findComponentOfType(MutableList<CompTypeIDPair> components, int typeID)
@@ -165,12 +162,6 @@ namespace ECS
             }
 
             return -1;
-        }
-
-        private static void swapToBackAndRemove(MutableList<CompTypeIDPair> components, int pos)
-        {
-            components.Swap(pos, components.Count - 1);
-            components.RemoveAt(components.Count - 1);
         }
 
         public ComponentList<T> GetComponentList<T>(int typeID) where T : struct
@@ -198,7 +189,6 @@ namespace ECS
 #if DEBUG
             if (entityID < 0 || entityID >= entityList.Count)
             {
-                int i = 5;
                 throw new IndexOutOfRangeException();
             }
 #endif
@@ -259,6 +249,38 @@ namespace ECS
         public void UnsubscribeListener(IECSListner listener)
         {
             subscribedListeners.Remove(listener);
+        }
+
+        private void invokeEntityCreatedEvent(int newEntityID)
+        {
+            for (int i = 0; i < subscribedListeners.Count; i++)
+            {
+                subscribedListeners[i].OnEntityCreated(entityList[newEntityID], newEntityID);
+            }
+        }
+
+        private void invokeEntityDestroyedEvent(int entityID, MutableList<CompTypeIDPair> entityComponents)
+        {
+            for (int i = 0; i < subscribedListeners.Count; i++)
+            {
+                subscribedListeners[i].OnEntityRemoved(entityComponents, entityID);
+            }
+        }
+
+        private void invokeComponentRemovedEvent(int entityID, MutableList<CompTypeIDPair> components, int indexIntoComponents)
+        {
+            for (int i = 0; i < subscribedListeners.Count; i++)
+            {
+                subscribedListeners[i].OnRemoveComponent(components, entityID, indexIntoComponents);
+            }
+        }
+
+        private void invokeComponentAddedEvent(int entityID, MutableList<CompTypeIDPair> entityComponents, int indexIntoComponentList)
+        {
+            for (int i = 0; i < subscribedListeners.Count; i++)
+            {
+                subscribedListeners[i].OnAddComponent(entityComponents, entityID, indexIntoComponentList);
+            }
         }
     }
 }

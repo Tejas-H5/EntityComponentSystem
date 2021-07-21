@@ -8,7 +8,7 @@ def newlineWithTabs():
 
 
 def createMethodSignature(numGenericParams):
-	functionDeclaration = "public void CreateEntity"
+	functionDeclaration = "public int CreateEntity"
 
 	templateArgs = "<T0"
 	for i in range(1,numGenericParams):
@@ -46,6 +46,8 @@ def createMethodBody(numGenericParams):
 	
 	methodBody += newlineWithTabs() + newlineWithTabs()
 	methodBody += "invokeEntityCreatedEvent(entity);"
+	methodBody += newlineWithTabs() + newlineWithTabs()
+	methodBody += "return entity;"
 
 	tabLevel -= 1
 	methodBody += newlineWithTabs() + "}"
@@ -83,7 +85,7 @@ def suffixFileContent():
 def createSourceFile(numGenericParams):
 	file = prefixFileContent()
 	file += createExtensionMethod(1)
-	for i in range(2, numGenericParams):
+	for i in range(2, numGenericParams+1):
 		file += newlineWithTabs()
 		file += newlineWithTabs()
 		file += createExtensionMethod(i)

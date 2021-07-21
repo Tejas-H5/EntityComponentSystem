@@ -15,6 +15,9 @@ namespace ECS.CustomDataStructures
 
         public MultiList(int listCount)
         {
+            if (listCount == 0)
+                throw new Exception("listCount MUST NOT BE 0");
+
             _listCount = listCount;
         }
 

@@ -7,15 +7,10 @@ namespace VisualTests.Systems
 {
     public class PointTrailDrawer : ECSSystem
     {
-        public PointTrailDrawer(ECSWorld world) : base(world)
-        {
-        }
-
-        protected override void InitSystem()
-        {
-            SelectComponentTypes(
+        public PointTrailDrawer(ECSWorld world) : base(world,
                 typeof(PointTrail)
-            );
+            )
+        {
         }
 
         protected override void Iterate(float deltaTime)

@@ -11,31 +11,13 @@ namespace ECS
         protected int[] foundComponentIDs;
 
         protected ECSWorld world;
-        protected int[] selectedComponentTypeIDs;
+        protected ComponentSelection componentSelection;
 
-        public ECSRelevantComponentListner(ECSWorld world) {
+        public ECSRelevantComponentListner(ECSWorld world, ComponentSelection selection) {
             this.world = world;
+            componentSelection = selection;
+            foundComponentIDs = new int[selection.Length];
         }
-
-        protected void SelectComponentTypes(params Type[] types)
-        {
-            selectedComponentTypeIDs = new int[types.Length];
-            foundComponentIDs = new int[types.Length];
-
-            for (int i = 0; i < types.Length; i++)
-            {
-                selectComponentType(types, i);
-            }
-
-            OnAfterComponentTypesHaveBeenSelected();
-        }
-
-        private void selectComponentType(Type[] types, int i)
-        {
-            int typeID = world.GetTypeID(types[i]);
-            selectedComponentTypeIDs[i] = typeID;
-        }
-
 
         public void OnEntityCreated(MutableList<CompTypeIDPair> components, int entityID)
         {
@@ -44,35 +26,12 @@ namespace ECS
 
         private void addEntityIfItHasSelectedComponents(MutableList<CompTypeIDPair> components, int entityID)
         {
-            if (findSelectedTypes(components))
+            if (componentSelection.findComponentIDs(components, foundComponentIDs))
             {
                 OnAddRelevantEntity(foundComponentIDs, entityID);
             }
         }
 
-        private bool findSelectedTypes(MutableList<CompTypeIDPair> components)
-        {
-            for (int i = 0; i < selectedComponentTypeIDs.Length; i++)
-            {
-                int selType = selectedComponentTypeIDs[i];
-                bool selectedComponentWasFound = false;
-
-                for (int j = 0; j < components.Count; j++)
-                {
-                    if (components[j].ComponentType == selType)
-                    {
-                        selectedComponentWasFound = true;
-                        foundComponentIDs[i] = components[j].ComponentID;
-                        break;
-                    }
-                }
-
-                if (!selectedComponentWasFound)
-                    return false;
-            }
-
-            return true;
-        }
 
         public void OnEntityRemoved(MutableList<CompTypeIDPair> components, int entityID)
         {
@@ -81,7 +40,7 @@ namespace ECS
 
         private void removeEntityIfItHadSelectedComponents(MutableList<CompTypeIDPair> components, int entityID)
         {
-            if (findSelectedTypes(components))
+            if (componentSelection.findComponentIDs(components, foundComponentIDs))
             {
                 OnRemoveRelevantEntity(entityID);
             }
@@ -90,28 +49,16 @@ namespace ECS
         public void OnAddComponent(MutableList<CompTypeIDPair> components, int entityID, int indexIntoComponentsList)
         {
             int addedComponentTypeID = components[indexIntoComponentsList].ComponentType;
-            int index = selectedComponentIndex(addedComponentTypeID);
+            int index = componentSelection.selectedComponentIndex(addedComponentTypeID);
 
             bool addedComponentIsASelectedComponent = index == -1;
             if (addedComponentIsASelectedComponent)
                 return;
 
-            if (!findSelectedTypes(components))
+            if (!componentSelection.findComponentIDs(components, foundComponentIDs))
                 return;
 
             OnAddRelevantEntity(foundComponentIDs, entityID);
-        }
-
-        private int selectedComponentIndex(int type)
-        {
-            for (int i = 0; i < selectedComponentTypeIDs.Length; i++)
-            {
-                if (selectedComponentTypeIDs[i] == type)
-                {
-                    return i;
-                }
-            }
-            return -1;
         }
 
         public void OnRemoveComponent(MutableList<CompTypeIDPair> components, int entityID, int indexIntoComponentsList)
@@ -119,7 +66,6 @@ namespace ECS
             removeEntityIfItHadSelectedComponents(components, entityID);
         }
 
-        protected abstract void OnAfterComponentTypesHaveBeenSelected();
         public abstract void OnAddRelevantEntity(int[] foundComponentIDs, int entityID);
         public abstract void OnRemoveRelevantEntity(int entityID);
     }

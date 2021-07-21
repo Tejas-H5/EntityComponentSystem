@@ -70,16 +70,12 @@ namespace Common
 
     public class MotionIntergratorSystem2D : ECSSystem
     {
-        public MotionIntergratorSystem2D(ECSWorld world) : base(world) { }
-
-        protected override void InitSystem()
-        {
-            SelectComponentTypes(
-                typeof(Velocity),
-                typeof(Position),
-                typeof(Acceleration)
-            );
-        }
+        public MotionIntergratorSystem2D(ECSWorld world) : base(world,
+                    typeof(Velocity),
+                    typeof(Position),
+                    typeof(Acceleration)
+                  )
+        { }
 
         protected override void Iterate(float deltaTime)
         {
@@ -103,18 +99,12 @@ namespace Common
 
     public class MotionIntergratorSystem2DReactive : ECSReactiveSystem
     {
-        public MotionIntergratorSystem2DReactive(ECSWorld world) : base(world) {
-
-
-        }
-
-        protected override void InitSystem()
-        {
-            SelectComponentTypes(
+        public MotionIntergratorSystem2DReactive(ECSWorld world) : base(world,
                 typeof(Velocity),
                 typeof(Position),
                 typeof(Acceleration)
-            );
+            )
+        {
         }
 
         protected override void Iterate(float deltaTime)
@@ -144,8 +134,8 @@ namespace Common
         MutableList<Acceleration> accelerations;
         MutableList<Position> positions;
 
-        public HardcodedMotionIntergratorSystem2D(MutableList<Velocity> velocities, 
-            MutableList<Acceleration> accelerations, 
+        public HardcodedMotionIntergratorSystem2D(MutableList<Velocity> velocities,
+            MutableList<Acceleration> accelerations,
             MutableList<Position> positions
             )
         {
@@ -156,7 +146,7 @@ namespace Common
 
         public void Update(float deltaTime)
         {
-            for(int i = 0; i < positions.Count; i++)
+            for (int i = 0; i < positions.Count; i++)
             {
                 Iterate(deltaTime,
                         ref velocities[i],

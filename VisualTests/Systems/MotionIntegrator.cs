@@ -7,16 +7,10 @@ namespace VisualTests.Systems
 {
     public class MotionIntegrator : ECSSystem
     {
-        public MotionIntegrator(ECSWorld world) : base(world)
+        public MotionIntegrator(ECSWorld world) : base(world,
+            typeof(Transform),
+            typeof(Motion))
         {
-        }
-
-        protected override void InitSystem()
-        {
-            SelectComponentTypes(
-                    typeof(Transform),
-                    typeof(Motion)
-                );
         }
 
         protected override void Iterate(float deltaTime)

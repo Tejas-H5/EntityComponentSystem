@@ -5,9 +5,9 @@ using System.Text;
 namespace ECS
 {
     /// <summary>
-    /// This is like the 5th time I have created and deleted this class
+    /// An optimzation for the GetComponent method in ECSSystem
     /// </summary>
-    internal static class StaticComponentListCache<T> where T : struct
+    public static class StaticComponentListCache<T> where T : struct
     {
         private static List<ComponentList<T>> componentListList = new List<ComponentList<T>>();
 

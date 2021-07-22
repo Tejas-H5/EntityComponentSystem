@@ -217,7 +217,7 @@ namespace ECS
                 }
             }
 
-            return ref componentDatabase.GetComponentList<T>(typeID)[componentID].Data;
+            return ref componentDatabase.GetComponentList<T>(typeID)[componentID];
         }
 
         internal void ComponentIDChanged(int entityID, int typeID, int newComponentID)

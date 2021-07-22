@@ -10,21 +10,20 @@ namespace ECS
     //Can't call this System because of the C# System namespace.
     public abstract class ECSSystem : IECSSystem
     {
-        private readonly List<IComponentList> selectedComponentLists = new List<IComponentList>();
-        private readonly int[] foundComponentIDs;
+        protected readonly List<IComponentList> selectedComponentLists = new List<IComponentList>();
+        protected readonly int[] foundComponentIDs;
 
-        private readonly ECSWorld world;
-        private readonly ComponentSelection componentSelection;
+        protected readonly ECSWorld world;
+        protected readonly ComponentSelection componentSelection;
 
-        /// <summary>
-        /// Mainly used in the Iterate() function to get the selected components.
         /// </summary>
         protected ref T GetComponent<T>(int initializationOrder) where T : struct
         {
             ComponentList<T> components = StaticComponentListCache<T>.Get(world.WorldID);
             int componentID = foundComponentIDs[initializationOrder];
-            return ref components[componentID].Data;
+            return ref components[componentID];
         }
+
 
         public ECSSystem(ECSWorld world, params Type[] types)
         {

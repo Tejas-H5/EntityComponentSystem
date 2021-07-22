@@ -6,9 +6,9 @@ namespace ECS
     public abstract class ECSReactiveSystem : IECSSystem
     {
         private readonly ECSFilteredEntityList filteredEntityList;
-        private readonly int[] foundComponentIDs;
+        protected readonly int[] foundComponentIDs;
 
-        private readonly ECSWorld world;
+        protected readonly ECSWorld world;
         private readonly ComponentSelection componentSelection;
 
         /// <summary>
@@ -18,7 +18,7 @@ namespace ECS
         {
             ComponentList<T> components = StaticComponentListCache<T>.Get(world.WorldID);
             int componentID = foundComponentIDs[initializationOrder];
-            return ref components[componentID].Data;
+            return ref components[componentID];
         }
 
         public ECSReactiveSystem(ECSWorld world, params Type[] types)

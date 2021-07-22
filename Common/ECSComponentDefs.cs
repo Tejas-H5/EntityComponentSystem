@@ -1,5 +1,6 @@
 ﻿using ECS;
 using ECS.CustomDataStructures;
+using ECS.Components;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -75,13 +76,14 @@ namespace Common
                     typeof(Position),
                     typeof(Acceleration)
                   )
-        { }
+        { 
+        }
 
         protected override void Iterate(float deltaTime)
         {
-            ref Velocity vel = ref GetComponent<Velocity>(0);
-            ref Position pos = ref GetComponent<Position>(1);
-            ref Acceleration accel = ref GetComponent<Acceleration>(2);
+			ref Velocity vel = ref GetComponent<Velocity>(0);
+			ref Position pos = ref GetComponent<Position>(1);
+			ref Acceleration accel = ref GetComponent<Acceleration>(2);
 
             float halfDelta = 0.5f * deltaTime;
 
@@ -109,9 +111,9 @@ namespace Common
 
         protected override void Iterate(float deltaTime)
         {
-            ref Velocity vel = ref GetComponent<Velocity>(0);
-            ref Position pos = ref GetComponent<Position>(1);
-            ref Acceleration accel = ref GetComponent<Acceleration>(2);
+			ref Velocity vel = ref GetComponent<Velocity>(0);
+			ref Position pos = ref GetComponent<Position>(1);
+			ref Acceleration accel = ref GetComponent<Acceleration>(2);
 
             float halfDelta = 0.5f * deltaTime;
 

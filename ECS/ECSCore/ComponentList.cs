@@ -27,7 +27,9 @@ namespace ECS
     {
         private Queue<int> deletedList = new Queue<int>();
 
-        private MutableList<Component<T>> components = new MutableList<Component<T>>(10);
+        private List<int> entityIDs = new List<int>();
+        private List<bool> destroyedFlags = new List<bool>();
+        private MutableList<T> components = new MutableList<T>(16);
         private int backOfList = 0;
 
         public int ActiveComponentCount {
@@ -54,7 +56,7 @@ namespace ECS
             this.typeID = typeID;
         }
 
-        public ref Component<T> this[int componentID] {
+        public ref T this[int componentID] {
             get {
                 return ref components[componentID];
             }
@@ -68,7 +70,7 @@ namespace ECS
         {
             for (int i = index + 1; i <= backOfList; i++)
             {
-                if (components[i].IsDestroyed)
+                if (destroyedFlags[i])
                     continue;
                 return i;
             }
@@ -87,12 +89,21 @@ namespace ECS
             if (deletedList.Count > 0)
             {
                 int pooledID = deletedList.Dequeue();
-                components[pooledID].IsDestroyed = false;
+                destroyedFlags[pooledID] = false;
+
+                if (pooledID > backOfList)
+                    backOfList = pooledID;
+
                 return pooledID;
             }
 
+
+            //Atomic
             int id = components.Count;
-            components.Add(new Component<T>(id, entityID, data));
+            components.Add(data);
+            entityIDs.Add(entityID);
+            destroyedFlags.Add(false);
+
 
             if (id > backOfList)
                 backOfList = id;
@@ -114,19 +125,19 @@ namespace ECS
 
         private bool isValidComponentID(int ID)
         {
-            return components[ID].EntityID == ECSConstants.InvalidEntityID;
+            return !destroyedFlags[ID];
         }
 
 
-        public void DestroyComponent(int ID)
+        public void DestroyComponent(int componentIDs)
         {
-            components[ID].EntityID = ECSConstants.InvalidEntityID;
-            components[ID].IsDestroyed = true;
-            deletedList.Enqueue(ID);
+            entityIDs[componentIDs] = ECSConstants.InvalidEntityID;
+            destroyedFlags[componentIDs] = true;
+            deletedList.Enqueue(componentIDs);
 
-            if (ID == backOfList)
+            if (componentIDs == backOfList)
             {
-                while (backOfList > 0 && components[backOfList].IsDestroyed)
+                while (backOfList > 0 && destroyedFlags[backOfList])
                 {
                     backOfList--;
                 }
@@ -135,7 +146,7 @@ namespace ECS
 
         public int GetEntityID(int componentID)
         {
-            return components[componentID].EntityID;
+            return entityIDs[componentID];
         }
 
         public void SendToStaticCache(int worldID)

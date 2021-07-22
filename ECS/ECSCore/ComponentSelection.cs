@@ -27,9 +27,10 @@ namespace ECS
 
     public class ComponentSelection
     {
-        private int[] selectedComponentTypeIDs;
-        private TypeIdxPair[] selectedComponentTypeIDsSorted;
-        public int Length;
+        private readonly int[] selectedComponentTypeIDs;
+        private readonly int[] selectedComponentTypeIDsSorted;
+        private readonly int[] sortedInitialPositions;
+        public readonly int Length;
 
         public int this[int index] { get { return selectedComponentTypeIDs[index]; } }
 
@@ -44,18 +45,20 @@ namespace ECS
                 selectComponentType(world, types, i);
             }
 
+            selectedComponentTypeIDsSorted = new int[types.Length];
+            sortedInitialPositions = new int[types.Length];
             generateSortedArray(types);
         }
 
         private void generateSortedArray(Type[] types)
         {
-            selectedComponentTypeIDsSorted = new TypeIdxPair[types.Length];
             for (int i = 0; i < selectedComponentTypeIDsSorted.Length; i++)
             {
-                selectedComponentTypeIDsSorted[i] = new TypeIdxPair(selectedComponentTypeIDs[i], i);
+                selectedComponentTypeIDsSorted[i] = selectedComponentTypeIDs[i];
+                sortedInitialPositions[i] = i;
             }
 
-            Array.Sort(selectedComponentTypeIDsSorted);
+            Array.Sort(selectedComponentTypeIDsSorted, sortedInitialPositions);
         }
 
         private void selectComponentType(ECSWorld world, Type[] types, int i)
@@ -76,61 +79,37 @@ namespace ECS
             return -1;
         }
 
-        public unsafe bool findComponentIDsUnsafe(MutableList<CompTypeIDPair> components, int* output)
+        public unsafe bool findComponentIDs(MutableList<CompTypeIDPair> components, int[] output)
         {
-            int j = 0;
+            //*
+            int selIndex = 0;
+            int selType = selectedComponentTypeIDsSorted[0];
 
-            for (int i = 0; i < selectedComponentTypeIDsSorted.Length; i++)
+            fixed(CompTypeIDPair* fixedPtr = &components[0])
             {
-                TypeIdxPair p = selectedComponentTypeIDsSorted[i];
-                bool selectedComponentWasFound = false;
-
-                for (; j < components.Count; j++)
+                CompTypeIDPair* ptr = fixedPtr;
+                for (int i = 0; i < components.Count; i++, ptr++)
                 {
-                    CompTypeIDPair p2 = components[j];
-                    if (p.TypeID == p2.ComponentType)
+                    if(ptr->ComponentType == selType)
                     {
-                        output[p.InitialPos] = p2.ComponentID;
-                        selectedComponentWasFound = true;
-                        break;
+                        output[sortedInitialPositions[selIndex]] = ptr->ComponentID;
+
+                        selIndex++;
+
+                        if (selIndex == this.Length)
+                            return true;
+                        selType = selectedComponentTypeIDsSorted[selIndex];
                     }
                 }
-
-                if (!selectedComponentWasFound)
-                    return false;
             }
-
-            return true;
+            return false;
         }
 
-        public bool findComponentIDs(MutableList<CompTypeIDPair> components, int[] output)
+        /// <summary>
+        /// Deprecated, as it assumes both lists are unsorted. they no longer are
+        /// </summary>
+        public bool findComponentIDsUnsorted(MutableList<CompTypeIDPair> components, int[] output)
         {
-            int j = 0;
-
-            for(int i = 0; i < selectedComponentTypeIDsSorted.Length; i++)
-            {
-                TypeIdxPair p = selectedComponentTypeIDsSorted[i];
-                bool selectedComponentWasFound = false;
-
-                for (; j < components.Count; j++)
-                {
-                    CompTypeIDPair p2 = components[j];
-                    if (p.TypeID == p2.ComponentType)
-                    {
-                        output[p.InitialPos] = p2.ComponentID;
-                        selectedComponentWasFound = true;
-                        break;
-                    }
-                }
-
-                if (!selectedComponentWasFound)
-                    return false;
-            }
-
-            return true;
-
-            /*
-            //Assumes both lists are unsorted. they no longer are
             for (int i = 0; i < selectedComponentTypeIDs.Length; i++)
             {
                 int selType = selectedComponentTypeIDs[i];
@@ -151,7 +130,7 @@ namespace ECS
             }
 
             return true;
-            */
         }
+
     }
 }

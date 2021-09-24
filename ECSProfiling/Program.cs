@@ -32,7 +32,13 @@ namespace ECSProfiling
             entities.Capacity = v;
             for(int i = 0; i < v; i++)
             {
-                entities.Add(world.CreateEntity(new Acceleration(0, 0), new Position(0, 0), new Velocity(1, 0)));
+                entities.Add(
+                    world.CreateEntity()
+                        .With(new Acceleration(0, 0))
+                        .With(new Position(0, 0))
+                        .With(new Velocity(1, 0))
+                        .ID
+                    );
             }
 
             return entities;

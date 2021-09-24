@@ -34,13 +34,15 @@ namespace ECSBenchmarking
         private void InitECS()
         {
             motionIntegrator = new MotionIntergratorSystem2DReactive(world);
-            entities = world.CreateEntities(NumberOfElements);
+            entities = new int[NumberOfElements];
 
             for (int i = 0; i < entities.Length; i++)
             {
-                world.AddComponent(entities[i], new Position());
-                world.AddComponent(entities[i], new Velocity(0.5f, 0));
-                world.AddComponent(entities[i], new Acceleration());
+                entities[i] = world.CreateEntity()
+                        .With(new Position())
+                        .With(new Velocity(0.5f, 0))
+                        .With(new Acceleration())
+                        .ID;
             }
         }
 

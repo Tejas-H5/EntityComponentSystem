@@ -37,7 +37,7 @@ namespace ECSUnitTests.ECS
             List<int> entities = new List<int>();
             for (int i = 0; i < number; i++)
             {
-                int entity = world.CreateEntity();
+                int entity = world.CreateEntity().ID;
                 entities.Add(entity);
             }
 
@@ -66,10 +66,11 @@ namespace ECSUnitTests.ECS
 
             IECSSystem motionIntegrator = CreateSystem(world);
 
-            int entity = world.CreateEntity();
-            world.AddComponent(entity, new Position(0, 0));
-            world.AddComponent(entity, new Velocity(1, 0));
-            world.AddComponent(entity, new Acceleration(0, 0));
+            int entity = world.CreateEntity()
+                .With(new Position(0, 0))
+                .With(new Velocity(1, 0))
+                .With(new Acceleration(0, 0))
+                .ID;
 
             float framerate = 1f / 60f;
             for (float t = 0; t < 10f; t += framerate)

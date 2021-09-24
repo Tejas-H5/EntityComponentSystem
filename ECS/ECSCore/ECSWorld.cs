@@ -37,9 +37,9 @@ namespace ECS
             componentDatabase.UploadToStaticCache(WorldID);
         }
 
-        public int[] CreateEntities(int number)
+        public EntityBuilder[] CreateEntities(int number)
         {
-            int[] entities = new int[number];
+            EntityBuilder[] entities = new EntityBuilder[number];
 
             for(int i = 0; i < number; i++)
             {
@@ -50,20 +50,20 @@ namespace ECS
         }
 
 
-        public int CreateEntity()
+        public EntityBuilder CreateEntity()
         {
             if (destroyedList.Count > 0)
             {
                 int pooledEntity = destroyedList.Dequeue();
                 isDestroyed[pooledEntity] = false;
-                return pooledEntity;
+                return new EntityBuilder(this, pooledEntity);
             }
 
             int newEntity = entityList.Count;
             entityList.Add(new MutableList<CompTypeIDPair>(3));
             isDestroyed.Add(false);
 
-            return newEntity;
+            return new EntityBuilder(this, newEntity);
         }
 
 

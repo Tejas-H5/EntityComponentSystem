@@ -28,7 +28,7 @@ namespace ECSBenchmarking
         }
 
 
-        [Benchmark]
+        //[Benchmark]
         public void NormalECSUpdate()
         {
             normal.ECSUpdate();

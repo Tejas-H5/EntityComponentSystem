@@ -27,7 +27,7 @@ namespace ECS.CustomDataStructures
     /// as a Swap method, as I have been using that a lot as well.
     /// </para>
     /// </summary>
-    public class MutableList<T>
+    public class MutableList<T> 
     {
         public const int GrowthFactor = 2;
 
@@ -50,6 +50,9 @@ namespace ECS.CustomDataStructures
 
         public ref T this[int i] {
             get {
+#if DEBUG
+                testIndex(i);
+#endif
                 return ref _backingArray[i];
             }
         }
@@ -160,6 +163,17 @@ namespace ECS.CustomDataStructures
         public void Sort()
         {
             Array.Sort(_backingArray, 0, _length);
+        }
+
+        public void RemoveRange(int i, int count)
+        {
+#if DEBUG
+            testIndex(i);
+            testIndex(i+count);
+#endif
+
+            Array.Copy(_backingArray, i + count, _backingArray, i, _length - (i + count));
+            _length -= count;
         }
     }
 }

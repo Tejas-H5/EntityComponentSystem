@@ -189,7 +189,7 @@ namespace SimplestECSUnitTests.CustomDataStructures
             AssertListsEqual(list, expected);
         }
 
-        MutableList<T> CreateList<T>(int size)
+        MutableList<T> CreateList<T>(int size) where T : struct
         {
             MutableList<T> list = new MutableList<T>(size);
 
@@ -224,6 +224,18 @@ namespace SimplestECSUnitTests.CustomDataStructures
             list.Clear();
 
             int[] expected = { };
+
+            AssertListsEqual(list, expected);
+        }
+
+        [TestMethod]
+        public void RemoveRange_ShouldRemoveRange()
+        {
+            MutableList<int> list = CreateListAscending(10);
+
+            list.RemoveRange(2,5);
+
+            int[] expected = {0,1,7,8,9 };
 
             AssertListsEqual(list, expected);
         }

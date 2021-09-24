@@ -57,7 +57,7 @@ namespace Common
     }
 
 
-
+    /*
     [ECSComponent((int)Components.Name)]
     public struct Name
     {
@@ -66,6 +66,39 @@ namespace Common
         public Name(string name)
         {
             NameString = name;
+        }
+    }
+    */
+
+    [ECSComponent((int)Components.Name)]
+    public unsafe struct Name
+    {
+        const int NAME_BUFFER_SIZE = 32;
+
+        fixed char nameData[NAME_BUFFER_SIZE];
+        public int Length;
+
+        public Name(string name)
+        {
+            Length = name.Length;
+            if (Length > NAME_BUFFER_SIZE)
+                Length = NAME_BUFFER_SIZE;
+
+            for (int i = 0; i < Length; i++)
+            {
+                nameData[i] = name[i];
+            }
+        }
+
+        public string NameString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Capacity = Length;
+            for (int i = 0; i < Length; i++)
+            {
+                sb.Append(nameData[i]);
+            }
+            return sb.ToString();
         }
     }
 

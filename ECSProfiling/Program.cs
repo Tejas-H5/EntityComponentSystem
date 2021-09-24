@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ECS;
 using Common;
+using System.Diagnostics;
 
 namespace ECSProfiling
 {
@@ -9,6 +10,8 @@ namespace ECSProfiling
     {
         static void Main(string[] args)
         {
+            Debugger.Launch();
+
             ECSWorld world = new ECSWorld();
 
             ECSSystem motionIntegrator = new MotionIntergratorSystem2D(world);

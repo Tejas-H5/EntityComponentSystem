@@ -30,6 +30,5 @@ namespace ECS
         {
             return componentListList[worldID];
         }
-
     }
 }

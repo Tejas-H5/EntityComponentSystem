@@ -6,11 +6,11 @@ namespace ECS
 {
     public class ECSFilteredEntityList : ECSRelevantComponentListner
     {
-        MultiList<int> componentIDLists;
+        FixedWidthTable<int> componentIDLists;
         Dictionary<int, int> entityIndexMap = new Dictionary<int, int>();
 
         public int NumEntities {
-            get { return componentIDLists.Length; }
+            get { return componentIDLists.Rows; }
         }
 
         public ECSWorld World {
@@ -21,7 +21,7 @@ namespace ECS
 
         public ECSFilteredEntityList(ECSWorld world, ComponentSelection selection) : base(world, selection)
         {
-            componentIDLists = new MultiList<int>(componentSelection.Length);
+            componentIDLists = new FixedWidthTable<int>(componentSelection.Length);
         }
 
         public override void OnAddRelevantEntity(int[] componentIDs, int entityID)

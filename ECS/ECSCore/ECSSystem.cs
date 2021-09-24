@@ -16,6 +16,7 @@ namespace ECS
         protected readonly ECSWorld world;
         protected readonly ComponentSelection componentSelection;
 
+        /// Mainly used in the Iterate() function to get the selected components.
         /// </summary>
         protected ref T GetComponent<T>(int initializationOrder) where T : struct
         {

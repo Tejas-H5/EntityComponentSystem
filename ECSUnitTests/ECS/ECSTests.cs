@@ -276,7 +276,7 @@ namespace ECSUnitTests.ECS
 
                 if(pos.X > 19 && pos.X < 21)
                 {
-                    Assert.IsTrue(world.GetComponentFromEntity<Name>(entities[entities.Count - 1]).NameString == "Usain");
+                    Assert.IsTrue(world.GetComponentFromEntity<Name>(entities[entities.Count - 1]).NameString().Equals("Usain"));
                 }
                 else
                 {

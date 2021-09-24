@@ -10,7 +10,6 @@ namespace IterationPatternBenchmarking.Benchmarks
 {
     interface IGenericList
     {
-
     }
 
     struct CompTypeIndexPair
@@ -59,7 +58,7 @@ namespace IterationPatternBenchmarking.Benchmarks
 
         List<IGenericList> componentDoublePointer = new List<IGenericList>();
 
-        Dictionary<int, MutableList<CompTypeIndexPair>> entityMap = new Dictionary<int, MutableList<CompTypeIndexPair>>();
+        List<MutableList<CompTypeIndexPair>> entityMap = new List<MutableList<CompTypeIndexPair>>();
 
         int[] selectedComponentIDs = new int[3];
         int[] compIDs = new int[3];
@@ -83,7 +82,7 @@ namespace IterationPatternBenchmarking.Benchmarks
                 components.Add(new CompTypeIndexPair(selectedComponentIDs[1], (int)i));
                 components.Add(new CompTypeIndexPair(selectedComponentIDs[2], (int)i));
 
-                entityMap[i] = components;
+                entityMap.Add(components);
             }
         }
 
@@ -111,6 +110,10 @@ namespace IterationPatternBenchmarking.Benchmarks
             positionComponents = createDefaultList(NUMELEMENTS, new Component<Position>());
             for(int i = 0; i < positionComponents.Count; i++)
             {
+                accelComponents[i].EntityID = i;
+                velocityComponents[i].EntityID = i;
+                positionComponents[i].EntityID = i;
+
                 positionComponents[i].Data.X = 0.5f;
             }
         }
@@ -145,7 +148,7 @@ namespace IterationPatternBenchmarking.Benchmarks
         }
 
 
-        [Benchmark]
+        //[Benchmark]
         public void IteratePureStructs()
         {
             for(int i = 0; i < NUMELEMENTS; i++)
@@ -154,7 +157,8 @@ namespace IterationPatternBenchmarking.Benchmarks
             }
         }
 
-        [Benchmark]
+
+        //[Benchmark]
         public void IterateComponentWrappedStructs()
         {
             for (int i = 0; i < NUMELEMENTS; i++)
@@ -164,7 +168,7 @@ namespace IterationPatternBenchmarking.Benchmarks
         }
 
 
-        [Benchmark]
+        //[Benchmark]
         public void IterateNestedComponentWrappedStructsVer1()
         {
             ListObject<Acceleration> accelList = (ListObject<Acceleration>)componentDoublePointer[0];
@@ -178,7 +182,7 @@ namespace IterationPatternBenchmarking.Benchmarks
         }
 
 
-        [Benchmark]
+        //[Benchmark]
         public void IterateNestedComponentWrappedStructsVer2()
         {
             for (int i = 0; i < NUMELEMENTS; i++)
@@ -190,8 +194,25 @@ namespace IterationPatternBenchmarking.Benchmarks
             }
         }
 
+        ref T GetComponent<T>(int ComponentID, int initOrder) where T :unmanaged
+        {
+            return ref ((ListObject<T>)componentDoublePointer[initOrder])[ComponentID];
+        }
 
-        [Benchmark]
+        //[Benchmark]
+        public void IterateNestedComponentWrappedStructsVer3()
+        {
+            for (int i = 0; i < NUMELEMENTS; i++)
+            {
+                verlet(
+                    ref GetComponent<Acceleration>(i, 0),
+                    ref GetComponent<Velocity>(i, 1),
+                    ref GetComponent<Position>(i, 2)
+                );
+            }
+        }
+
+        //[Benchmark]
         public void IterateNestedComponentWrappedStructsThroughComponentIDArray()
         {
             for (int i = 0; i < NUMELEMENTS; i++)
@@ -206,11 +227,11 @@ namespace IterationPatternBenchmarking.Benchmarks
 
         private void Iterate()
         {
-            ListObject<Acceleration> accelList = (ListObject<Acceleration>)componentDoublePointer[0];
-            ListObject<Velocity> velocityList = (ListObject<Velocity>)componentDoublePointer[1];
-            ListObject<Position> posList = (ListObject<Position>)componentDoublePointer[2];
-
-            verlet(ref accelList[compIDs[0]], ref velocityList[compIDs[1]], ref posList[compIDs[2]]);
+            verlet(
+                ref GetComponent<Acceleration>(compIDs[0], 0),
+                ref GetComponent<Velocity>(compIDs[1], 1),
+                ref GetComponent<Position>(compIDs[2], 2)
+            );
         }
 
 
@@ -254,5 +275,44 @@ namespace IterationPatternBenchmarking.Benchmarks
             }
         }
 
+
+        [Benchmark]
+        public void ECSLikeIterationWithPtrs()
+        {
+            int shortestComponent = 1;
+            for (int i = 0; i < NUMELEMENTS; i++)
+            {
+                compIDs[shortestComponent] = i;
+                MutableList<CompTypeIndexPair> entityComponents = entityMap[i];
+
+                int found = 1;
+
+                for (int j = 0; j < entityComponents.Count; j++)
+                {
+                    if (entityComponents[j].ComponentType == shortestComponent)
+                        continue;
+
+                    for (int k = 0; k < selectedComponentIDs.Length; k++)
+                    {
+                        if (entityComponents[j].ComponentType == selectedComponentIDs[k])
+                        {
+                            compIDs[k] = entityComponents[j].ComponentID;
+                            found++;
+
+                            if (found == selectedComponentIDs.Length)
+                                break;
+                        }
+                    }
+
+                    if (found == selectedComponentIDs.Length)
+                        break;
+                }
+
+                if (found == selectedComponentIDs.Length)
+                {
+                    Iterate();
+                }
+            }
+        }
     }
 }
